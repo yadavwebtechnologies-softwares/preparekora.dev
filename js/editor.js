@@ -7,16 +7,9 @@
 
 (() => {
 
-    /* =====================================
-       State
-    ===================================== */
-
     let activeModule = "mcq";
 
-    const brandState = {
-        name: "preparekora",
-        domain: ".in"
-    };
+    const brandState = { name: "preparekora", domain: ".in" };
 
     const idState = {
         current: "PR/11/0001",
@@ -29,7 +22,7 @@
         "1:1":  { w: 1080, h: 1080 },
         "16:9": { w: 1920, h: 1080 },
         "9:16": { w: 1080, h: 1920 },
-        "4:3":  { w: 1080, h: 1350 },   // preserve original default
+        "4:3":  { w: 1080, h: 1350 },
         "3:4":  { w: 1080, h: 1440 }
     };
 
@@ -42,9 +35,9 @@
         },
         qa: {
             panelTitle: "Create Q&A image",
-            panelDesc:  "Follow the steps to create your Q&A image.",
+            panelDesc:  "Follow the steps to create your question and explanation image.",
             step1Title: "Paste your Q&A format",
-            step1Desc:  "Paste the question and answer in English and Assamese."
+            step1Desc:  "Paste the question and explanation in English and Assamese."
         }
     };
 
@@ -53,19 +46,15 @@
     let fitTimer = null;
 
 
-    /* =====================================
-       Helpers
-    ===================================== */
+    /* Helpers */
 
     function pad2(n) { return String(n).padStart(2, "0"); }
     function pad4(n) { return String(n).padStart(4, "0"); }
 
     function escapeHTML(s) {
         return String(s == null ? "" : s)
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
+            .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;").replace(/"/g, "&quot;")
             .replace(/'/g, "&#39;");
     }
 
@@ -75,9 +64,7 @@
     }
 
 
-    /* =====================================
-       ID management (PR/MM/NNNN)
-    ===================================== */
+    /* ID management */
 
     function loadIdState() {
         const now = new Date().getMonth() + 1;
@@ -127,9 +114,7 @@
     }
 
 
-    /* =====================================
-       Parsers
-    ===================================== */
+    /* Parsers */
 
     function parseMCQ(text) {
         const r = {
@@ -169,7 +154,7 @@
         const r = {
             subjectEn: "", subjectAs: "",
             questionEn: "", questionAs: "",
-            answerEn: "", answerAs: ""
+            explanationEn: "", explanationAs: ""
         };
 
         text.split(/\r?\n/).forEach(line => {
@@ -187,18 +172,17 @@
             else if ((m = t.match(/^Q\s*[-\/]?\s*EN\s*[:：]\s*(.+)/i))) r.questionEn = m[1].trim();
             else if ((m = t.match(/^Q\s*[-\/]?\s*AS\s*[:：]\s*(.+)/i))) r.questionAs = m[1].trim();
             else if ((m = t.match(/^Q\s*[:：]\s*(.+)/i))) r.questionEn = m[1].trim();
-            else if ((m = t.match(/^Ans(?:wer)?\s*[-\/]?\s*EN\s*[:：]\s*(.+)/i))) r.answerEn = m[1].trim();
-            else if ((m = t.match(/^Ans(?:wer)?\s*[-\/]?\s*AS\s*[:：]\s*(.+)/i))) r.answerAs = m[1].trim();
-            else if ((m = t.match(/^Ans(?:wer)?\s*[:：]\s*(.+)/i))) r.answerEn = m[1].trim();
+            else if ((m = t.match(/^Exp(?:lanation)?\s*[-\/]?\s*EN\s*[:：]\s*(.+)/i))) r.explanationEn = m[1].trim();
+            else if ((m = t.match(/^Exp(?:lanation)?\s*[-\/]?\s*AS\s*[:：]\s*(.+)/i))) r.explanationAs = m[1].trim();
+            else if ((m = t.match(/^Ans(?:wer)?\s*[-\/]?\s*EN\s*[:：]\s*(.+)/i)) && !r.explanationEn) r.explanationEn = m[1].trim();
+            else if ((m = t.match(/^Ans(?:wer)?\s*[-\/]?\s*AS\s*[:：]\s*(.+)/i)) && !r.explanationAs) r.explanationAs = m[1].trim();
         });
 
         return r;
     }
 
 
-    /* =====================================
-       Poster HTML builders
-    ===================================== */
+    /* Poster builders */
 
     function buildHeaderHTML() {
         return `
@@ -236,7 +220,18 @@
         return parts.join("");
     }
 
-    function buildMCQPosterHTML(d) {
+    function buildExplanationHTML(en, as) {
+        if (!en && !as) return "";
+        return `
+            <div class="poster-explanation">
+                <div class="poster-explanation-title">Explanation</div>
+                ${en ? `<div class="poster-explanation-text">${escapeHTML(en)}</div>` : ""}
+                ${as ? `<div class="poster-explanation-text">${escapeHTML(as)}</div>` : ""}
+            </div>
+        `;
+    }
+
+    function buildMCQPosterHTML(d, includeExplanation) {
         const optHTML = ["A","B","C","D"].map(letter => {
             const o = d.options[letter];
             return `
@@ -258,13 +253,9 @@
             if (aObj.as) answerText += " / " + aObj.as;
         }
 
-        const explHTML = (d.explanationEn || d.explanationAs) ? `
-            <div class="poster-explanation">
-                <div class="poster-explanation-title">Explanation</div>
-                ${d.explanationEn ? `<div class="poster-explanation-text">${escapeHTML(d.explanationEn)}</div>` : ""}
-                ${d.explanationAs ? `<div class="poster-explanation-text">${escapeHTML(d.explanationAs)}</div>` : ""}
-            </div>
-        ` : "";
+        const explHTML = includeExplanation
+            ? buildExplanationHTML(d.explanationEn, d.explanationAs)
+            : "";
 
         return `
             ${buildHeaderHTML()}
@@ -285,21 +276,13 @@
     }
 
     function buildQAPosterHTML(d) {
-        const answerHTML = (d.answerEn || d.answerAs) ? `
-            <div class="poster-answer-box">
-                <div class="poster-answer-label">Answer</div>
-                ${d.answerEn ? `<div class="poster-answer-text">${escapeHTML(d.answerEn)}</div>` : ""}
-                ${d.answerAs ? `<div class="poster-answer-text">${escapeHTML(d.answerAs)}</div>` : ""}
-            </div>
-        ` : "";
-
         return `
             ${buildHeaderHTML()}
             <section class="poster-content">
                 <div class="poster-question-area">
                     ${buildSubjectHTML(d.subjectEn, d.subjectAs)}
                     <h1 class="poster-question" id="previewQuestion">${buildQuestionHTML(d.questionEn, d.questionAs)}</h1>
-                    ${answerHTML}
+                    ${buildExplanationHTML(d.explanationEn, d.explanationAs)}
                 </div>
             </section>
             ${buildFooterHTML()}
@@ -307,28 +290,25 @@
     }
 
 
-    /* =====================================
-       Render poster
-    ===================================== */
+    /* Render */
 
     function renderPoster() {
         const poster = $("poster");
         if (!poster) return;
 
-        const text = activeModule === "mcq"
-            ? ($("mcqContent") ? $("mcqContent").value : "")
-            : ($("qaContent") ? $("qaContent").value : "");
-
         if (activeModule === "mcq") {
+            const text = $("mcqContent") ? $("mcqContent").value : "";
             const data = parseMCQ(text);
+            const includeExpl = $("mcqIncludeExplanation") ? $("mcqIncludeExplanation").checked : true;
             poster.className = "poster poster-bilingual";
-            poster.innerHTML = buildMCQPosterHTML(data);
-            syncHiddenFields(data);
+            poster.innerHTML = buildMCQPosterHTML(data, includeExpl);
+            syncHiddenFields(data, "mcq");
         } else {
+            const text = $("qaContent") ? $("qaContent").value : "";
             const data = parseQA(text);
             poster.className = "poster poster-qa";
             poster.innerHTML = buildQAPosterHTML(data);
-            syncHiddenFields(data);
+            syncHiddenFields(data, "qa");
         }
 
         applyPosterDimensions();
@@ -338,14 +318,12 @@
     }
 
 
-    /* =====================================
-       Sync hidden compat fields
-    ===================================== */
+    /* Sync hidden compat fields */
 
-    function syncHiddenFields(d) {
+    function syncHiddenFields(d, mode) {
         const set = (id, v) => { const el = $(id); if (el) el.value = v; };
 
-        if (activeModule === "mcq") {
+        if (mode === "mcq") {
             set("subjectName", d.subjectEn || d.subjectAs);
             set("questionText", d.questionEn || d.questionAs);
             set("optionA", d.options.A.en || d.options.A.as);
@@ -360,14 +338,12 @@
             set("optionB", "");
             set("optionC", "");
             set("optionD", "");
-            set("commentsText", d.answerEn || d.answerAs);
+            set("commentsText", d.explanationEn || d.explanationAs || "");
         }
     }
 
 
-    /* =====================================
-       Poster dimensions
-    ===================================== */
+    /* Dimensions */
 
     function applyPosterDimensions() {
         const poster = $("poster");
@@ -405,9 +381,7 @@
     }
 
 
-    /* =====================================
-       Fit poster dynamically
-    ===================================== */
+    /* Auto-fit */
 
     function fitPoster() {
         const poster = $("poster");
@@ -448,9 +422,7 @@
     }
 
 
-    /* =====================================
-       QR
-    ===================================== */
+    /* QR */
 
     function initQR() {
         const el = $("previewQrCode");
@@ -462,23 +434,16 @@
         if (window.QRCode) {
             try {
                 new QRCode(el, {
-                    text: url,
-                    width: 54,
-                    height: 54,
-                    colorDark: "#252525",
-                    colorLight: "#ffffff",
+                    text: url, width: 54, height: 54,
+                    colorDark: "#252525", colorLight: "#ffffff",
                     correctLevel: QRCode.CorrectLevel.M
                 });
-            } catch (err) {
-                console.warn("QR init failed", err);
-            }
+            } catch (err) { console.warn("QR init failed", err); }
         }
     }
 
 
-    /* =====================================
-       Export info
-    ===================================== */
+    /* Export info */
 
     function updateExportInfo() {
         const ratio = $("aspectRatio").value;
@@ -502,28 +467,38 @@
     }
 
 
-    /* =====================================
-       Module switching
-    ===================================== */
+    /* Module switching */
 
     function setModule(mod) {
         if (mod !== "mcq" && mod !== "qa") return;
         activeModule = mod;
 
-        // Tabs
         document.querySelectorAll(".module-tab").forEach(tab => {
             const on = tab.dataset.module === mod;
             tab.classList.toggle("active", on);
             tab.setAttribute("aria-selected", on ? "true" : "false");
         });
 
-        // Field groups
         const mcqFG = $("mcqFieldGroup");
         const qaFG  = $("qaFieldGroup");
         if (mcqFG) mcqFG.hidden = mod !== "mcq";
         if (qaFG)  qaFG.hidden  = mod !== "qa";
 
-        // Heading texts
+        // Toggle visibility of MCQ-only controls
+        const mcqToggleGroup = $("mcqOutputToggleGroup");
+        if (mcqToggleGroup) mcqToggleGroup.hidden = mod !== "mcq";
+
+        const bothBtn = $("exportBothButton");
+        if (bothBtn) {
+            if (mod === "mcq") {
+                bothBtn.hidden = false;
+                const expBtn = $("exportButton");
+                bothBtn.disabled = expBtn ? expBtn.disabled : true;
+            } else {
+                bothBtn.hidden = true;
+            }
+        }
+
         const meta = moduleMeta[mod];
         const title = $("panelHeadingTitle");
         const desc  = $("panelHeadingDesc");
@@ -539,9 +514,7 @@
     }
 
 
-    /* =====================================
-       Save status
-    ===================================== */
+    /* Save status */
 
     function updateSaveStatus(msg) {
         const el = $("saveStatus");
@@ -549,129 +522,104 @@
     }
 
 
-    /* =====================================
-       Events
-    ===================================== */
+    /* Events */
 
     function bindEvents() {
-        // Live input on active module
         ["mcqContent", "qaContent"].forEach(id => {
             const el = $(id);
-            if (el) {
-                el.addEventListener("input", () => {
-                    renderPoster();
-                    updateSaveStatus("Editing…");
-                });
-            }
+            if (el) el.addEventListener("input", () => {
+                renderPoster();
+                updateSaveStatus("Editing…");
+            });
         });
 
-        // Ratio
         const ratio = $("aspectRatio");
-        if (ratio) {
-            ratio.addEventListener("change", () => {
-                const customFields = $("customSizeFields");
-                if (customFields) customFields.hidden = ratio.value !== "custom";
-                renderPoster();
-            });
-        }
+        if (ratio) ratio.addEventListener("change", () => {
+            const customFields = $("customSizeFields");
+            if (customFields) customFields.hidden = ratio.value !== "custom";
+            renderPoster();
+        });
 
         ["customWidth", "customHeight"].forEach(id => {
             const el = $(id);
             if (el) el.addEventListener("input", () => renderPoster());
         });
 
-        // QR
         const qrUrl = $("qrUrl");
-        if (qrUrl) {
-            qrUrl.addEventListener("input", () => {
-                initQR();
-                scheduleFit();
-            });
-        }
+        if (qrUrl) qrUrl.addEventListener("input", () => { initQR(); scheduleFit(); });
 
-        // Preview button
+        // Explanation toggle
+        const explToggle = $("mcqIncludeExplanation");
+        if (explToggle) explToggle.addEventListener("change", () => {
+            renderPoster();
+            updateSaveStatus("Ready");
+        });
+
         const previewBtn = $("previewButton");
-        if (previewBtn) {
-            previewBtn.addEventListener("click", () => {
-                renderPoster();
-                const resSel = $("exportResolution");
-                const expBtn = $("exportButton");
-                if (resSel) resSel.disabled = false;
-                if (expBtn) expBtn.disabled = false;
-                const st = $("previewStatus");
-                if (st) st.textContent = "Preview updated.";
-                const est = $("exportStatus");
-                if (est) est.textContent = "Ready to download.";
-                updateSaveStatus("Ready");
-            });
-        }
+        if (previewBtn) previewBtn.addEventListener("click", () => {
+            renderPoster();
+            const resSel = $("exportResolution");
+            const expBtn = $("exportButton");
+            const bothBtn = $("exportBothButton");
+            if (resSel) resSel.disabled = false;
+            if (expBtn) expBtn.disabled = false;
+            if (bothBtn && activeModule === "mcq") bothBtn.disabled = false;
 
-        // Resolution
+            const st = $("previewStatus");
+            if (st) st.textContent = "Preview updated.";
+            const est = $("exportStatus");
+            if (est) est.textContent = "Ready to download.";
+            updateSaveStatus("Ready");
+        });
+
         const res = $("exportResolution");
         if (res) res.addEventListener("change", updateExportInfo);
 
-        // Format
         const fmt = $("exportFormat");
-        if (fmt) {
-            fmt.addEventListener("change", () => {
-                const qf = $("qualityField");
-                if (qf) qf.hidden = fmt.value !== "webp";
-                updateExportInfo();
-            });
-        }
+        if (fmt) fmt.addEventListener("change", () => {
+            const qf = $("qualityField");
+            if (qf) qf.hidden = fmt.value !== "webp";
+            updateExportInfo();
+        });
 
-        // Quality slider
         const quality = $("exportQuality");
-        if (quality) {
-            quality.addEventListener("input", () => {
-                const val = $("qualityValue");
-                if (val) val.textContent = quality.value + "%";
-            });
-        }
+        if (quality) quality.addEventListener("input", () => {
+            const val = $("qualityValue");
+            if (val) val.textContent = quality.value + "%";
+        });
 
-        // Manual ID toggle
         const manualToggle = $("manualIdToggle");
-        if (manualToggle) {
-            manualToggle.addEventListener("change", () => {
-                idState.manual = manualToggle.checked;
-                localStorage.setItem("pk_id_manual", idState.manual ? "1" : "0");
-                const idInput = $("mcqId");
-                if (idInput) idInput.readOnly = !idState.manual;
-                const status = $("manualIdStatus");
-                if (status) {
-                    status.textContent = idState.manual
-                        ? "Manual editing is enabled. Modify the ID carefully."
-                        : "Manual editing is disabled. Image ID is automatically managed.";
-                }
-            });
-        }
+        if (manualToggle) manualToggle.addEventListener("change", () => {
+            idState.manual = manualToggle.checked;
+            localStorage.setItem("pk_id_manual", idState.manual ? "1" : "0");
+            const idInput = $("mcqId");
+            if (idInput) idInput.readOnly = !idState.manual;
+            const status = $("manualIdStatus");
+            if (status) {
+                status.textContent = idState.manual
+                    ? "Manual editing is enabled. Modify the ID carefully."
+                    : "Manual editing is disabled. Image ID is automatically managed.";
+            }
+        });
 
         const idInput = $("mcqId");
-        if (idInput) {
-            idInput.addEventListener("input", () => {
-                if (!idState.manual) return;
-                idState.current = idInput.value.trim() || idState.current;
-                renderPoster();
-            });
-        }
+        if (idInput) idInput.addEventListener("input", () => {
+            if (!idState.manual) return;
+            idState.current = idInput.value.trim() || idState.current;
+            renderPoster();
+        });
 
-        // Download compat button
         const dl = $("downloadButton");
-        if (dl) {
-            dl.addEventListener("click", () => {
-                const btn = $("exportButton");
-                if (btn) btn.click();
-            });
-        }
+        if (dl) dl.addEventListener("click", () => {
+            const btn = $("exportButton");
+            if (btn) btn.click();
+        });
 
-        // Resize
         window.addEventListener("resize", scheduleFit);
     }
 
 
-    /* =====================================
-       Init
-    ===================================== */
+    /* Init */
 
     function init() {
         loadIdState();
@@ -679,17 +627,24 @@
         setModule("mcq");
         updateExportInfo();
         updateSaveStatus("Ready");
-        console.log("Preparekora editor ready (bilingual).");
+        console.log("Preparekora editor ready (bilingual MCQ + Q&A).");
     }
 
-    // Public API
     window.PreparekoraEditor = {
         setModule,
         updateSaveStatus,
         renderPoster,
         fitPoster,
         incrementId,
-        getIdState: () => ({ ...idState })
+        getIdState: () => ({ ...idState }),
+        isExplanationOn: () => {
+            const t = $("mcqIncludeExplanation");
+            return t ? t.checked : true;
+        },
+        setExplanation: (on) => {
+            const t = $("mcqIncludeExplanation");
+            if (t) { t.checked = !!on; renderPoster(); }
+        }
     };
 
     if (document.readyState === "loading") {

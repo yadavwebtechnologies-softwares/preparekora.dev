@@ -4,323 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Q&A Studio — preparekora</title>
+  <link rel="stylesheet" href="css/style.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Assamese:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-*{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --bg:#fafafa;--surface:#fff;--primary:#1a1a1a;--secondary:#6b6b6b;
-  --muted:#999;--border:#e5e5e5;--border-soft:#eee;--accent:#a84b32;
-  --radius:8px;--sidebar-w:400px;--topbar-h:56px;
-  --font-ui:'Roboto',system-ui,-apple-system,sans-serif;
-  --font-en:'Roboto',sans-serif;
-  --font-as:'Noto Sans Assamese','Roboto',sans-serif;
-  --ph-brand-size:12px;
-  --ph-subject-size:10px;
-  --ph-id-size:9px;
-  --qa-label-size:12px;
-  --qa-en-size:12px;
-  --qa-as-size:11px;
-  --pf-brand-size:8px;
-  --pf-page-size:8px;
-  --ph-qr-size:48px;
-}
-body{font-family:var(--font-ui);background:var(--bg);color:var(--primary);
-  font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
-button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit}
-button:disabled{opacity:.5;cursor:not-allowed}
-input,textarea{font-family:inherit;font-size:inherit;width:100%}
-[hidden]{display:none!important}
-
-/* Topbar */
-.topbar{display:flex;align-items:center;justify-content:space-between;
-  height:var(--topbar-h);padding:0 20px;background:var(--surface);
-  border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50}
-.brand{font-size:16px;font-weight:800;letter-spacing:-.4px;display:inline-flex;
-  align-items:center;gap:8px}
-.brand span{color:var(--muted);font-weight:500}
-.brand-tag{font-size:10px;text-transform:uppercase;letter-spacing:.8px;
-  font-weight:700;padding:3px 7px;background:#f0f0f0;border-radius:4px;
-  color:var(--secondary)}
-
-/* Workspace */
-.workspace{display:grid;grid-template-columns:var(--sidebar-w) minmax(0,1fr);
-  height:calc(100vh - var(--topbar-h));overflow:hidden}
-
-/* Sidebar */
-.sidebar{background:var(--surface);border-right:1px solid var(--border);
-  display:flex;flex-direction:column;overflow:hidden}
-.sidebar-scroll{flex:1;overflow-y:auto;padding:20px;scrollbar-width:thin}
-.sidebar-scroll::-webkit-scrollbar{width:6px}
-.sidebar-scroll::-webkit-scrollbar-thumb{background:#d5d5d5;border-radius:10px}
-
-.field-group{margin-bottom:16px}
-.field-group:last-child{margin-bottom:0}
-.field-group label{display:block;margin-bottom:6px;font-size:12px;
-  font-weight:600;color:var(--secondary);text-transform:uppercase;
-  letter-spacing:.5px}
-.input{padding:9px 12px;font-size:14px;border:1px solid var(--border);
-  border-radius:var(--radius);background:#fff;color:var(--primary);
-  transition:border-color .15s ease,box-shadow .15s ease}
-.input:focus{outline:none;border-color:#999;box-shadow:0 0 0 3px rgba(0,0,0,.05)}
-textarea.input{min-height:220px;resize:vertical;
-  font-family:ui-monospace,'SF Mono',Menlo,Consolas,monospace;
-  font-size:12.5px;line-height:1.65}
-.hint{margin-top:6px;font-size:11.5px;color:var(--muted);line-height:1.5}
-
-.toggle-group{display:grid;gap:6px}
-.ratio-group{grid-template-columns:repeat(3,1fr)}
-.layout-group{grid-template-columns:repeat(2,1fr)}
-.toggle-btn{padding:8px 4px;font-size:12px;font-weight:600;
-  border:1px solid var(--border);border-radius:var(--radius);
-  background:#fff;color:var(--secondary);transition:all .15s ease;
-  display:inline-flex;align-items:center;justify-content:center;gap:6px}
-.toggle-btn:hover{color:var(--primary);border-color:#ccc}
-.toggle-btn.active{background:var(--primary);color:#fff;border-color:var(--primary)}
-.toggle-btn .icon{display:inline-flex;width:12px;height:12px;gap:1px}
-.toggle-btn .icon span{background:currentColor;border-radius:1px}
-.toggle-btn .icon.cols-1 span{width:100%;height:100%}
-.toggle-btn .icon.cols-2 span{width:50%;height:100%}
-
-.theme-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
-.theme-swatch{
-  aspect-ratio:1;border-radius:10px;border:2px solid transparent;
-  position:relative;cursor:pointer;padding:0;
-  transition:transform .15s ease,box-shadow .15s ease;overflow:hidden;
-  box-shadow:inset 0 0 0 1px rgba(0,0,0,.06)}
-.theme-swatch:hover{transform:scale(1.06)}
-.theme-swatch.active{border-color:var(--primary);
-  box-shadow:inset 0 0 0 1px rgba(0,0,0,.06),0 0 0 2px #fff,0 0 0 3px var(--primary)}
-.theme-swatch.active::after{content:"✓";position:absolute;inset:0;
-  display:grid;place-items:center;background:rgba(0,0,0,.28);color:#fff;
-  font-size:16px;font-weight:800}
-
-.status{padding:10px 12px;background:#f5f5f5;border-radius:var(--radius);
-  font-size:12px;color:var(--secondary);line-height:1.5;margin-top:16px}
-.status strong{color:var(--primary);font-weight:700}
-.status-warn{color:var(--accent);font-weight:600}
-
-.actions{padding:16px 20px;border-top:1px solid var(--border);
-  display:flex;flex-direction:column;gap:8px;background:var(--surface)}
-.btn{padding:11px 16px;font-size:14px;font-weight:700;border-radius:var(--radius);
-  display:inline-flex;align-items:center;justify-content:center;gap:6px;
-  transition:all .15s ease}
-.btn-primary{background:var(--primary);color:#fff}
-.btn-primary:hover:not(:disabled){background:#333}
-.btn-secondary{background:#fff;color:var(--primary);border:1px solid var(--border)}
-.btn-secondary:hover:not(:disabled){background:#f5f5f5;border-color:#ccc}
-.btn-full{width:100%}
-
-/* Result sidebar */
-.result-sidebar{display:flex;flex-direction:column;align-items:center;
-  text-align:center;padding:40px 16px}
-.result-sidebar-icon{width:52px;height:52px;border-radius:50%;
-  background:#e8f5e9;color:#2e7d32;display:grid;place-items:center;
-  font-size:24px;font-weight:800;margin-bottom:16px}
-.result-sidebar-title{font-size:17px;font-weight:700;color:var(--primary);
-  margin-bottom:8px}
-.result-sidebar-text{font-size:13px;color:var(--secondary);line-height:1.6;
-  max-width:280px}
-.result-sidebar-list{margin-top:24px;width:100%;display:flex;
-  flex-direction:column;gap:6px}
-.result-sidebar-item{display:flex;align-items:center;justify-content:space-between;
-  gap:8px;padding:8px 10px;background:#fafafa;border-radius:6px;
-  font-size:12px;border:1px solid var(--border-soft)}
-.result-sidebar-item .rsi-page{font-weight:700;color:var(--primary)}
-.result-sidebar-item .rsi-id{color:var(--secondary);font-family:ui-monospace,monospace;font-size:11px}
-.result-sidebar-item.done{background:#f0f9f0;border-color:#d4ecd4}
-.result-sidebar-item.done .rsi-page::before{content:"✓ ";color:#2e7d32;font-weight:800}
-
-/* Preview panel */
-.preview-panel{display:flex;flex-direction:column;padding:20px;overflow:hidden}
-
-.preview-edit{display:flex;flex-direction:column;height:100%;overflow:hidden}
-.preview-toolbar{display:flex;align-items:center;justify-content:space-between;
-  margin-bottom:14px;gap:12px}
-.preview-toolbar h2{font-size:15px;font-weight:700}
-.pager{display:flex;align-items:center;gap:4px;padding:4px;background:#fff;
-  border:1px solid var(--border);border-radius:var(--radius)}
-.pager-btn{width:26px;height:26px;display:grid;place-items:center;
-  border-radius:5px;color:var(--secondary);font-size:16px;line-height:1;
-  font-weight:600}
-.pager-btn:hover:not(:disabled){background:#f0f0f0;color:var(--primary)}
-.pager-label{padding:0 8px;font-size:12px;font-weight:600;white-space:nowrap}
-
-.preview-stage{flex:1;min-height:0;display:flex;align-items:center;
-  justify-content:center;overflow:auto;padding:24px;
-  border-radius:var(--radius);background-color:#f0f0f0;
-  background-image:linear-gradient(45deg,#e8e8e8 25%,transparent 25%),
-    linear-gradient(-45deg,#e8e8e8 25%,transparent 25%),
-    linear-gradient(45deg,transparent 75%,#e8e8e8 75%),
-    linear-gradient(-45deg,transparent 75%,#e8e8e8 75%);
-  background-size:16px 16px;background-position:0 0,0 8px,8px -8px,-8px 0}
-.preview-stage::-webkit-scrollbar{width:6px;height:6px}
-.preview-stage::-webkit-scrollbar-thumb{background:#d5d5d5;border-radius:10px}
-
-/* Result view */
-.preview-result{display:flex;flex-direction:column;height:100%;overflow:hidden}
-.result-toolbar{display:flex;align-items:flex-start;justify-content:space-between;
-  margin-bottom:16px;gap:12px;flex-shrink:0}
-.result-toolbar h2{font-size:16px;font-weight:700;color:var(--primary)}
-.result-toolbar p{font-size:12px;color:var(--secondary);margin-top:3px}
-.result-toolbar-badge{font-size:11px;font-weight:700;padding:5px 9px;
-  background:#e8f5e9;color:#2e7d32;border-radius:6px;white-space:nowrap}
-
-.result-grid{flex:1;min-height:0;overflow-y:auto;padding:8px 0 20px;
-  display:grid;grid-template-columns:repeat(auto-fill,270px);
-  gap:20px;justify-content:center;align-content:start;
-  scrollbar-width:thin}
-.result-grid::-webkit-scrollbar{width:6px}
-.result-grid::-webkit-scrollbar-thumb{background:#d5d5d5;border-radius:10px}
-
-.result-card{width:270px;display:flex;flex-direction:column;gap:10px}
-
-.result-preview{width:270px;position:relative;overflow:hidden;
-  border-radius:10px;border:1px solid var(--border);
-  background:#fff;box-shadow:0 2px 12px rgba(0,0,0,.06)}
-.result-preview .poster{
-  width:540px !important;max-width:none !important;
-  position:absolute;top:0;left:0;
-  transform:scale(0.5);transform-origin:top left;
-  border-radius:0 !important;border:none !important;
-  box-shadow:none !important;pointer-events:none}
-.result-preview .poster *{pointer-events:none}
-
-.result-meta{display:flex;align-items:center;justify-content:space-between;
-  gap:8px;padding:0 2px}
-.result-meta-text{display:flex;flex-direction:column;gap:2px;min-width:0}
-.result-meta-page{font-size:12px;font-weight:700;color:var(--primary);
-  white-space:nowrap}
-.result-meta-id{font-size:10.5px;color:var(--secondary);
-  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.2px}
-.btn-download{padding:7px 12px;font-size:12px;font-weight:700;
-  background:var(--primary);color:#fff;border-radius:6px;
-  display:inline-flex;align-items:center;gap:5px;
-  transition:background .15s ease;flex-shrink:0}
-.btn-download:hover:not(:disabled){background:#333}
-.btn-download.done{background:#2e7d32}
-.btn-download.done::before{content:"✓ ";font-weight:800}
-
-/* POSTER — themed */
-.poster{
-  --poster-bg: linear-gradient(135deg,#fef9f3 0%,#fdf2e9 100%);
-  --poster-text:#2d2419;
-  --poster-text-soft:#5a4a38;
-  --poster-accent:#a84b32;
-  --poster-border:#e8ddd0;
-  width:540px;max-width:100%;aspect-ratio:var(--aspect-ratio,3/4);
-  padding:22px 24px;display:flex;flex-direction:column;
-  background:var(--poster-bg);color:var(--poster-text);
-  border:1px solid rgba(0,0,0,.06);border-radius:12px;
-  box-shadow:0 4px 20px rgba(0,0,0,.06);
-  font-family:var(--font-ui);flex-shrink:0}
-
-.poster[data-theme="cream"]{--poster-bg:linear-gradient(135deg,#fef9f3 0%,#fdf2e9 100%);--poster-text:#2d2419;--poster-text-soft:#5a4a38;--poster-accent:#a84b32;--poster-border:#e8ddd0}
-.poster[data-theme="lavender"]{--poster-bg:linear-gradient(135deg,#f5f3fb 0%,#ede7f6 100%);--poster-text:#2a2438;--poster-text-soft:#5a526b;--poster-accent:#7c5cb8;--poster-border:#ddd5eb}
-.poster[data-theme="mint"]{--poster-bg:linear-gradient(135deg,#f0f8f3 0%,#e0f2e7 100%);--poster-text:#1c3025;--poster-text-soft:#3d5e48;--poster-accent:#1f7a4a;--poster-border:#c8dfd1}
-.poster[data-theme="sky"]{--poster-bg:linear-gradient(135deg,#f0f7fd 0%,#e3eef9 100%);--poster-text:#1a2d40;--poster-text-soft:#415a75;--poster-accent:#2a6ba8;--poster-border:#c4d8eb}
-.poster[data-theme="rose"]{--poster-bg:linear-gradient(135deg,#fdf3f5 0%,#fce7ec 100%);--poster-text:#3a1f28;--poster-text-soft:#6b4552;--poster-accent:#a83b5b;--poster-border:#e8d0d8}
-.poster[data-theme="butter"]{--poster-bg:linear-gradient(135deg,#fffdf0 0%,#fdf6d8 100%);--poster-text:#3a3018;--poster-text-soft:#6b5c30;--poster-accent:#a88520;--poster-border:#e8ddb0}
-.poster[data-theme="grey"]{--poster-bg:linear-gradient(135deg,#f7f8fa 0%,#ecedf1 100%);--poster-text:#252830;--poster-text-soft:#4a4e58;--poster-accent:#4a4e58;--poster-border:#d8dae0}
-.poster[data-theme="coral"]{--poster-bg:linear-gradient(135deg,#fff5f0 0%,#ffe8de 100%);--poster-text:#3d2119;--poster-text-soft:#6b3f30;--poster-accent:#c25630;--poster-border:#efd0c0}
-.poster[data-theme="teal"]{--poster-bg:linear-gradient(135deg,#f0f9f8 0%,#dff1ef 100%);--poster-text:#1a3532;--poster-text-soft:#3d5a55;--poster-accent:#1f7a70;--poster-border:#c4d8d5}
-.poster[data-theme="peach"]{--poster-bg:linear-gradient(135deg,#fff6f0 0%,#ffe9d8 100%);--poster-text:#3a2418;--poster-text-soft:#6b4830;--poster-accent:#c27028;--poster-border:#e8d4bc}
-
-.poster-header{display:grid;grid-template-columns:1fr auto 1fr;
-  align-items:center;gap:14px;padding-bottom:10px;
-  border-bottom:1px solid var(--poster-border);flex-shrink:0}
-.ph-brand{font-size:var(--ph-brand-size);font-weight:800;
-  letter-spacing:-.3px;justify-self:start;white-space:nowrap;
-  color:var(--poster-text)}
-.ph-brand .ph-domain{color:var(--poster-text-soft);font-weight:500;opacity:.75}
-.ph-subject{justify-self:center;font-size:var(--ph-subject-size);
-  font-weight:700;color:var(--poster-accent);text-transform:uppercase;
-  letter-spacing:.6px;text-align:center;overflow-wrap:anywhere;max-width:200px;
-  line-height:1.3}
-.ph-id{justify-self:end;padding:3px 7px;font-size:var(--ph-id-size);
-  font-weight:700;color:var(--poster-text-soft);
-  border:1px solid var(--poster-border);border-radius:9px;
-  white-space:nowrap;letter-spacing:.3px;background:rgba(255,255,255,.5)}
-
-.poster-body{flex:1;min-height:0;padding:14px 0;overflow:hidden;
-  display:flex;flex-direction:column}
-.poster-body-inner{width:100%;height:100%;display:flex;flex-direction:column}
-
-.qa-item{min-width:0}
-.qa-line{display:flex;gap:6px;align-items:flex-start}
-.qa-q{margin-bottom:3px}
-.qa-lbl{flex-shrink:0;min-width:26px;
-  font-size:var(--qa-label-size);font-weight:800;color:var(--poster-accent);
-  line-height:1.45;letter-spacing:.2px}
-.qa-lbl-a{color:var(--poster-text)}
-.qa-content{flex:1;min-width:0;line-height:1.45;text-align:justify;
-  text-justify:inter-word;overflow-wrap:anywhere;word-break:break-word}
-.qa-en{font-family:var(--font-en);font-size:var(--qa-en-size);
-  color:var(--poster-text);font-weight:600}
-.qa-as{font-family:var(--font-as);font-size:var(--qa-as-size);
-  color:var(--poster-text-soft);font-weight:600}
-
-.qa-1col{display:flex;flex-direction:column;gap:14px;margin:auto 0}
-.qa-1col .qa-item+.qa-item{padding-top:12px;
-  border-top:1px solid var(--poster-border);opacity:.98}
-
-.qa-2col{display:grid;grid-template-columns:1fr 1fr;gap:18px;
-  align-content:start;height:100%}
-.qa-col{display:flex;flex-direction:column;gap:10px;min-width:0}
-.qa-col .qa-item{padding-bottom:10px;border-bottom:1px solid var(--poster-border)}
-.qa-col .qa-item:last-child{border-bottom:0;padding-bottom:0}
-
-.poster-footer{flex-shrink:0;padding-top:10px;
-  border-top:1px solid var(--poster-border);
-  display:flex;align-items:center;justify-content:space-between;gap:12px}
-.pf-brand{font-size:var(--pf-brand-size);font-weight:700;
-  color:var(--poster-text-soft);letter-spacing:.3px;opacity:.8}
-.pf-page{font-size:var(--pf-page-size);font-weight:600;
-  color:var(--poster-text-soft);letter-spacing:.5px;opacity:.55}
-
-.pf-qr{width:var(--ph-qr-size);height:var(--ph-qr-size);
-  background:#ffffff;padding:4px;border-radius:4px;
-  display:grid;place-items:center;overflow:hidden;flex-shrink:0;
-  box-shadow:0 0 0 1px rgba(0,0,0,.06)}
-.pf-qr img,.pf-qr canvas{width:calc(var(--ph-qr-size) - 8px) !important;
-  height:calc(var(--ph-qr-size) - 8px) !important;display:block}
-
-.empty-state{padding:40px 20px;text-align:center;color:var(--poster-text-soft);
-  opacity:.7;font-size:13px}
-
-/* Export overlay */
-.export-overlay{position:fixed;inset:0;z-index:1000;display:flex;
-  align-items:center;justify-content:center;padding:20px;
-  background:rgba(255,255,255,.94);backdrop-filter:blur(10px)}
-.export-loader{width:min(100%,300px);padding:26px;text-align:center;
-  background:#fff;border:1px solid var(--border);border-radius:12px;
-  box-shadow:0 8px 30px rgba(0,0,0,.08)}
-.loader-spinner{width:32px;height:32px;margin:0 auto 16px;
-  border:3px solid #eee;border-top-color:var(--primary);border-radius:50%;
-  animation:spin 1s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-.export-loader h3{font-size:15px;font-weight:700}
-.export-loader p{margin-top:6px;font-size:12.5px;color:var(--secondary)}
-.progress-track{height:4px;margin-top:16px;border-radius:4px;
-  background:#eee;overflow:hidden}
-.progress-bar{height:100%;width:0;background:var(--primary);
-  border-radius:4px;transition:width .2s ease}
-
-@media (max-width:900px){:root{--sidebar-w:340px}}
-@media (max-width:720px){
-  .workspace{grid-template-columns:1fr;height:auto;overflow:visible}
-  .sidebar{border-right:0;border-bottom:1px solid var(--border)}
-  .sidebar-scroll{overflow:visible}
-  .preview-panel{min-height:620px;padding:16px 12px}
-  .preview-stage{padding:14px}
-  .topbar{padding:0 14px}
-  .result-grid{grid-template-columns:repeat(auto-fill,minmax(240px,1fr))}
-  .result-card,.result-preview{width:100%}
-  .result-preview .poster{transform:scale(calc(var(--scale,0.44)))}
-}
-</style>
 </head>
 <body>
 
@@ -331,8 +19,6 @@ textarea.input{min-height:220px;resize:vertical;
 <main class="workspace">
 
   <aside class="sidebar">
-
-    <!-- EDIT MODE sidebar -->
     <div class="sidebar-scroll" id="sidebarInputs">
       <div class="field-group">
         <label for="subject">Subject</label>
@@ -369,7 +55,13 @@ Q: In which state is Kaziranga National Park? (কাজিৰঙা ৰাষ�
 Ans: Assam (অসম)
 
 Q: Who founded the Ahom kingdom? (আহোম ৰাজ্য কোনে প্ৰতিষ্ঠা কৰিছিল?)
-Ans: Sukapha (চুকাফা)</textarea>
+Ans: Sukapha (চুকাফা)
+
+Q: What is the longest river in India? (ভাৰতৰ আটাইতকৈ দীঘল নদী কোনটো?)
+Ans: Ganga (গংগা)
+
+Q: Who was the first woman Prime Minister of India? (ভাৰতৰ প্ৰথম মহিলা প্ৰধানমন্ত্ৰী কোন আছিল?)
+Ans: Indira Gandhi (ইন্দিৰা গান্ধী)</textarea>
         <p class="hint">Format: <code>Q: English (Assamese)</code> then <code>Ans: English (Assamese)</code></p>
       </div>
 
@@ -378,6 +70,7 @@ Ans: Sukapha (চুকাফা)</textarea>
         <div class="toggle-group ratio-group">
           <button class="toggle-btn ratio-btn" data-ratio="1:1" type="button">1:1</button>
           <button class="toggle-btn ratio-btn active" data-ratio="3:4" type="button">3:4</button>
+          <button class="toggle-btn ratio-btn" data-ratio="4:5" type="button">4:5</button>
           <button class="toggle-btn ratio-btn" data-ratio="9:16" type="button">9:16</button>
         </div>
       </div>
@@ -402,7 +95,6 @@ Ans: Sukapha (চুকাফা)</textarea>
       <div class="status" id="status">—</div>
     </div>
 
-    <!-- RESULT MODE sidebar -->
     <div class="sidebar-scroll" id="sidebarResult" hidden>
       <div class="result-sidebar">
         <div class="result-sidebar-icon">✓</div>
@@ -416,18 +108,15 @@ Ans: Sukapha (চুকাফা)</textarea>
     </div>
 
     <div class="actions">
-      <button class="btn btn-primary btn-full" id="previewBtn" type="button">Preview image</button>
+      <button class="btn btn-primary btn-full" id="previewBtn" type="button">Analyze &amp; Preview images</button>
       <button class="btn btn-secondary btn-full" id="backBtn" type="button" hidden>← Back to edit</button>
     </div>
-
   </aside>
 
   <section class="preview-panel">
-
-    <!-- EDIT MODE: live single preview -->
     <div class="preview-edit" id="previewEdit">
       <div class="preview-toolbar">
-        <h2>Live preview</h2>
+        <h2>Live preview <span style="font-weight:500;font-size:11px;color:#999">(approximate)</span></h2>
         <div class="pager" id="pager" hidden>
           <button class="pager-btn" id="pagerPrev" type="button">‹</button>
           <span class="pager-label" id="pagerLabel">1 / 1</span>
@@ -439,18 +128,16 @@ Ans: Sukapha (চুকাফা)</textarea>
       </div>
     </div>
 
-    <!-- RESULT MODE: grid of all pages -->
     <div class="preview-result" id="previewResult" hidden>
       <div class="result-toolbar">
         <div>
           <h2 id="resultCount">Pages generated</h2>
-          <p>Click download on any page to save it as 4K PNG.</p>
+          <p id="resultBreakdown">—</p>
         </div>
         <span class="result-toolbar-badge" id="resultBadge">0 / 0 downloaded</span>
       </div>
       <div class="result-grid" id="resultGrid"></div>
     </div>
-
   </section>
 
 </main>
@@ -458,8 +145,8 @@ Ans: Sukapha (চুকাফা)</textarea>
 <div class="export-overlay" id="exportOverlay" hidden>
   <div class="export-loader">
     <div class="loader-spinner"></div>
-    <h3>Preparing image</h3>
-    <p id="exportProgressText">Rendering...</p>
+    <h3>Analyzing content</h3>
+    <p id="exportProgressText">Fitting questions to pages...</p>
     <div class="progress-track"><div class="progress-bar" id="exportProgressBar"></div></div>
   </div>
 </div>
@@ -470,9 +157,6 @@ Ans: Sukapha (চুকাফা)</textarea>
 (() => {
   "use strict";
 
-  /* =========================================
-     CONSTANTS
-  ========================================= */
   const $ = id => document.getElementById(id);
   const ID_START = 18;
   const ID_KEY = "pk_qa_id";
@@ -480,7 +164,7 @@ Ans: Sukapha (চুকাফা)</textarea>
   const LAYOUT_KEY = "pk_qa_layout";
   const RATIO_KEY  = "pk_qa_ratio";
   const THEME_KEY  = "pk_qa_theme";
-  const PER_PAGE = 10;
+  const PREVIEW_ROUGH_PER_PAGE = 10;
   const EXPORT_SCALE = 4;
   const LOCKED_QR_URL = "https://chat.whatsapp.com/DLrcA98MrlYKOeZ5DMeN5Z";
 
@@ -498,22 +182,21 @@ Ans: Sukapha (চুকাফা)</textarea>
   ];
 
   const state = {
-    mode: "edit",                 // "edit" | "result"
+    mode: "edit",
     ratio: "3:4",
     layout: "2col",
     theme: "cream",
     currentPage: 0,
     items: [],
     pages: [],
-    previewBase: ID_START,        // ID base snapshot for current preview session
+    previewBase: ID_START,
     downloadedPages: new Set(),
     id: { month: new Date().getMonth() + 1, base: ID_START }
   };
   let isExporting = false;
+  let analyzeToken = 0;
 
-  /* =========================================
-     ID SYSTEM
-  ========================================= */
+  /* ----- ID ----- */
   function initId() {
     const now = new Date().getMonth() + 1;
     let m = parseInt(localStorage.getItem(ID_MONTH_KEY) || "0", 10);
@@ -534,14 +217,12 @@ Ans: Sukapha (চুকাফা)</textarea>
     return "PR/" + String(state.id.month).padStart(2,"0") + "/" + String(n).padStart(4,"0");
   }
 
-  /* =========================================
-     PREFERENCES
-  ========================================= */
+  /* ----- Prefs ----- */
   function loadPrefs() {
     const sl = localStorage.getItem(LAYOUT_KEY);
     if (sl === "1col" || sl === "2col") state.layout = sl;
     const sr = localStorage.getItem(RATIO_KEY);
-    if (sr === "1:1" || sr === "3:4" || sr === "9:16") state.ratio = sr;
+    if (sr === "1:1" || sr === "3:4" || sr === "4:5" || sr === "9:16") state.ratio = sr;
     const st = localStorage.getItem(THEME_KEY);
     if (st && THEMES.some(t => t.id === st)) state.theme = st;
   }
@@ -549,9 +230,7 @@ Ans: Sukapha (চুকাফা)</textarea>
   function saveRatio(v){ state.ratio = v; localStorage.setItem(RATIO_KEY, v); }
   function saveTheme(v){ state.theme = v; localStorage.setItem(THEME_KEY, v); }
 
-  /* =========================================
-     PARSER
-  ========================================= */
+  /* ----- Parser ----- */
   function splitInline(text) {
     const t = (text || "").trim();
     if (!t) return { en: "", as: "" };
@@ -562,11 +241,9 @@ Ans: Sukapha (চুকাফা)</textarea>
     return { en: t, as: "" };
   }
   function parseQA(text) {
-    const items = [];
-    let cur = null;
+    const items = []; let cur = null;
     for (const raw of text.split(/\r?\n/)) {
-      const line = raw.trim();
-      if (!line) continue;
+      const line = raw.trim(); if (!line) continue;
       const q = line.match(/^Q\s*[:：]\s*(.*)$/i);
       if (q) {
         if (cur && cur.ansEn !== undefined) items.push(cur);
@@ -584,9 +261,9 @@ Ans: Sukapha (চুকাফা)</textarea>
     if (cur && cur.ansEn !== undefined) items.push(cur);
     return items;
   }
-  function paginate(items, perPage) {
+  function paginate(items, per) {
     const pages = [];
-    for (let i = 0; i < items.length; i += perPage) pages.push(items.slice(i, i + perPage));
+    for (let i = 0; i < items.length; i += per) pages.push(items.slice(i, i + per));
     return pages;
   }
   function escapeHTML(s) {
@@ -594,26 +271,21 @@ Ans: Sukapha (চুকাফা)</textarea>
       .replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
   }
 
-  /* =========================================
-     QR (high-res source, crisp at 4x export)
-  ========================================= */
+  /* ----- QR ----- */
   function renderQR(container) {
     if (!container || !window.QRCode) return;
     container.innerHTML = "";
     try {
-      const renderSize = 224;
       new QRCode(container, {
         text: LOCKED_QR_URL,
-        width: renderSize, height: renderSize,
+        width: 224, height: 224,
         colorDark: "#000000", colorLight: "#ffffff",
         correctLevel: QRCode.CorrectLevel.M
       });
     } catch (e) { console.warn("QR render error:", e); }
   }
 
-  /* =========================================
-     BLOCK BUILDERS
-  ========================================= */
+  /* ----- Builders ----- */
   function buildBlockHTML(item) {
     const qParts = [];
     if (item.qEn) qParts.push(`<span class="qa-en">${escapeHTML(item.qEn)}</span>`);
@@ -664,9 +336,7 @@ Ans: Sukapha (চুকাফা)</textarea>
       </footer>`;
   }
 
-  /* =========================================
-     THEME + RATIO + LAYOUT UI
-  ========================================= */
+  /* ----- UI state ----- */
   function applyRatio(ratio) {
     const [wr, hr] = ratio.split(":").map(Number);
     $("poster").style.setProperty("--aspect-ratio", `${wr} / ${hr}`);
@@ -700,23 +370,18 @@ Ans: Sukapha (চুকাফা)</textarea>
     });
   }
 
-  /* =========================================
-     EDIT-MODE PREVIEW (single page)
-  ========================================= */
-  function checkOverflow(posterEl) {
-    const body = posterEl.querySelector(".poster-body");
-    return body ? body.scrollHeight > body.clientHeight + 2 : false;
-  }
-  function updateStatus(overflow) {
+  /* ----- Edit preview (rough) ----- */
+  function updateStatus() {
     const total = state.items.length;
     const pages = Math.max(state.pages.length, 1);
     const el = $("status");
     if (!total) { el.textContent = "No Q&A detected — paste in the textarea above."; return; }
     const layoutLabel = state.layout === "2col" ? "2 columns" : "1 column";
     const themeObj = THEMES.find(t => t.id === state.theme);
-    let html = `<strong>${total}</strong> Q&amp;A · <strong>${pages}</strong> page${pages>1?"s":""} · ${PER_PAGE}/page<br>${layoutLabel} · ${themeObj?themeObj.name:""}`;
-    if (overflow) html += `<br><span class="status-warn">⚠ content may clip — try 9:16 or 1 column</span>`;
-    el.innerHTML = html;
+    el.innerHTML =
+      `<strong>${total}</strong> Q&amp;A · <strong>${pages}</strong> page${pages>1?"s":""} (approx)<br>` +
+      `${layoutLabel} · ${themeObj?themeObj.name:""}` +
+      `<br><span style="color:#888;font-size:11px">Click Preview for accurate fit analysis</span>`;
   }
   function updatePager(totalPages) {
     const pager = $("pager");
@@ -729,7 +394,7 @@ Ans: Sukapha (চুকাফা)</textarea>
   function renderPreview() {
     if (state.mode !== "edit") return;
     state.items = parseQA($("input").value);
-    state.pages = paginate(state.items, PER_PAGE);
+    state.pages = paginate(state.items, PREVIEW_ROUGH_PER_PAGE);
     const totalPages = Math.max(state.pages.length, 1);
     if (state.currentPage >= totalPages) state.currentPage = totalPages - 1;
 
@@ -755,153 +420,19 @@ Ans: Sukapha (চুকাফা)</textarea>
       poster.innerHTML = buildPageHTML(state.pages[state.currentPage], state.currentPage, totalPages);
     }
     renderQR(poster.querySelector(".pf-qr"));
-    updateStatus(checkOverflow(poster));
+    updateStatus();
     updatePager(totalPages);
   }
 
-  /* =========================================
-     ENTER / EXIT PREVIEW MODE
-  ========================================= */
-  function enterPreviewMode() {
-    // Parse fresh content
-    const items = parseQA($("input").value);
-    if (!items.length) { alert("Please paste at least one Q&A pair."); return; }
-
-    state.items = items;
-    state.pages = paginate(items, PER_PAGE);
-    state.previewBase = state.id.base;   // snapshot ID base for this session
-    state.downloadedPages = new Set();
-    state.currentPage = 0;
-    state.mode = "result";
-
-    // Switch sidebar
-    $("sidebarInputs").hidden = true;
-    $("sidebarResult").hidden = false;
-
-    // Switch buttons
-    $("previewBtn").disabled = true;
-    $("backBtn").hidden = false;
-
-    // Switch preview panel
-    $("previewEdit").hidden = true;
-    $("previewResult").hidden = false;
-
-    renderResultView();
+  /* ============================================================
+     INTELLIGENT PAGINATION
+     - Measures actual rendered fit
+     - Balanced distribution across pages
+     - No fixed 10/page
+  ============================================================ */
+  function waitFrame() {
+    return new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
   }
-
-  function exitPreviewMode() {
-    // Consume IDs if any page was downloaded
-    if (state.downloadedPages.size > 0) {
-      saveIdBase(state.previewBase + state.pages.length);
-    }
-
-    state.mode = "edit";
-    state.downloadedPages = new Set();
-
-    $("sidebarInputs").hidden = false;
-    $("sidebarResult").hidden = true;
-    $("previewBtn").disabled = false;
-    $("backBtn").hidden = true;
-    $("previewEdit").hidden = false;
-    $("previewResult").hidden = true;
-
-    renderPreview();
-  }
-
-  /* =========================================
-     RESULT VIEW (grid of pages)
-  ========================================= */
-  function renderResultView() {
-    const totalPages = state.pages.length;
-    const [wr, hr] = state.ratio.split(":").map(Number);
-    const aspect = `${wr} / ${hr}`;
-
-    // Header
-    $("resultCount").textContent = `${totalPages} page${totalPages > 1 ? "s" : ""} generated`;
-    $("resultSidebarTitle").textContent = `${totalPages} page${totalPages > 1 ? "s" : ""} generated`;
-    updateBadge();
-
-    // Sidebar list of pages
-    const sidebarList = $("resultSidebarList");
-    sidebarList.innerHTML = "";
-    for (let i = 0; i < totalPages; i++) {
-      const row = document.createElement("div");
-      row.className = "result-sidebar-item";
-      row.dataset.page = i;
-      row.innerHTML = `
-        <span class="rsi-page">Page ${i + 1}</span>
-        <span class="rsi-id">${escapeHTML(getIdForPage(i))}</span>`;
-      sidebarList.appendChild(row);
-    }
-
-    // Grid of cards
-    const grid = $("resultGrid");
-    grid.innerHTML = "";
-
-    for (let i = 0; i < totalPages; i++) {
-      const id = getIdForPage(i);
-
-      const card = document.createElement("div");
-      card.className = "result-card";
-      card.dataset.page = i;
-
-      // Mini poster (scaled to 0.5)
-      const preview = document.createElement("div");
-      preview.className = "result-preview";
-      preview.style.aspectRatio = aspect;
-      preview.innerHTML = `
-        <div class="poster" data-theme="${state.theme}" style="aspect-ratio:${aspect}">
-          ${buildPageHTML(state.pages[i], i, totalPages)}
-        </div>`;
-      card.appendChild(preview);
-
-      // Meta row: page + id + download btn
-      const meta = document.createElement("div");
-      meta.className = "result-meta";
-      meta.innerHTML = `
-        <div class="result-meta-text">
-          <span class="result-meta-page">Page ${i + 1}</span>
-          <span class="result-meta-id">${escapeHTML(id)}</span>
-        </div>
-        <button class="btn-download" data-page="${i}" type="button">Download</button>`;
-      card.appendChild(meta);
-
-      grid.appendChild(card);
-
-      // Render QR inside mini poster
-      renderQR(preview.querySelector(".pf-qr"));
-
-      // Bind download
-      const btn = meta.querySelector(".btn-download");
-      btn.addEventListener("click", () => downloadPage(i, btn));
-    }
-  }
-
-  function updateBadge() {
-    const total = state.pages.length;
-    const done = state.downloadedPages.size;
-    $("resultBadge").textContent = `${done} / ${total} downloaded`;
-  }
-
-  function markPageDownloaded(i) {
-    state.downloadedPages.add(i);
-    updateBadge();
-
-    // Update card button
-    const card = document.querySelector(`.result-card[data-page="${i}"]`);
-    if (card) {
-      const btn = card.querySelector(".btn-download");
-      btn.classList.add("done");
-      btn.textContent = "Downloaded";
-    }
-    // Update sidebar row
-    const row = document.querySelector(`.result-sidebar-item[data-page="${i}"]`);
-    if (row) row.classList.add("done");
-  }
-
-  /* =========================================
-     INDIVIDUAL PAGE DOWNLOAD
-  ========================================= */
   function fontsReady() {
     return new Promise(async resolve => {
       try {
@@ -918,19 +449,231 @@ Ans: Sukapha (চুকাফা)</textarea>
       resolve();
     });
   }
-  function waitFrame() {
-    return new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+
+  async function computePages(items) {
+    if (!items.length) return [];
+
+    const [wr, hr] = state.ratio.split(":").map(Number);
+    const posterH = Math.round(540 * hr / wr);
+
+    // Offscreen measurement container — real poster structure
+    const measure = document.createElement("div");
+    measure.className = "poster";
+    measure.setAttribute("data-theme", state.theme);
+    measure.style.cssText = `position:fixed;left:-99999px;top:0;
+      width:540px;height:${posterH}px;pointer-events:none;visibility:hidden`;
+    measure.style.setProperty("--aspect-ratio", `${wr}/${hr}`);
+    measure.innerHTML = `
+      <header class="poster-header">
+        <div class="ph-brand">preparekora<span class="ph-domain">.in</span></div>
+        <div class="ph-subject">x</div>
+        <div class="ph-id">PR/11/0000</div>
+      </header>
+      <section class="poster-body"><div class="poster-body-inner"></div></section>
+      <footer class="poster-footer">
+        <span class="pf-brand">preparekora.in</span>
+        <span class="pf-page">1 / 1</span>
+        <div class="pf-qr" style="width:48px;height:48px"></div>
+      </footer>`;
+    document.body.appendChild(measure);
+    await waitFrame();
+
+    const body = measure.querySelector(".poster-body");
+    const inner = measure.querySelector(".poster-body-inner");
+
+    function fits(subset) {
+      inner.innerHTML = buildBodyHTML(subset);
+      void inner.offsetHeight;
+      return body.scrollHeight <= body.clientHeight + 1;
+    }
+
+    // --- Phase 1: Greedy → determines minimum pages needed ---
+    const greedy = [];
+    let idx = 0;
+    while (idx < items.length) {
+      let n = 1;
+      while (idx + n <= items.length && fits(items.slice(idx, idx + n))) n++;
+      n--;
+      if (n < 1) n = 1;
+      greedy.push(items.slice(idx, idx + n));
+      idx += n;
+    }
+    const minPages = greedy.length;
+    let result = greedy;
+
+    // --- Phase 2: Balance across minPages ---
+    if (minPages > 1) {
+      const balanced = [];
+      let start = 0;
+      while (start < items.length) {
+        const pagesLeft = minPages - balanced.length;
+        const remain = items.length - start;
+        const target = Math.ceil(remain / Math.max(1, pagesLeft));
+        let n = target;
+        while (n > 1 && !fits(items.slice(start, start + n))) n--;
+        if (n < 1) n = 1;
+        balanced.push(items.slice(start, start + n));
+        start += n;
+      }
+      // Use balanced only if it didn't add extra pages
+      if (balanced.length <= minPages) result = balanced;
+    }
+
+    measure.remove();
+    return result;
   }
-  function showOverlay(t) {
+
+  /* ----- Enter / Exit preview ----- */
+  async function enterPreviewMode() {
+    const items = parseQA($("input").value);
+    if (!items.length) { alert("Please paste at least one Q&A pair."); return; }
+
+    const token = ++analyzeToken;
+
+    // Show overlay
     $("exportOverlay").hidden = false;
-    $("exportProgressText").textContent = t || "Rendering...";
+    $("exportProgressText").textContent = "Analyzing content fit...";
     $("exportProgressBar").style.width = "20%";
+    $("previewBtn").disabled = true;
+    $("previewBtn").textContent = "Analyzing…";
+
+    try {
+      await fontsReady();
+      $("exportProgressBar").style.width = "50%";
+
+      const pages = await computePages(items);
+      if (token !== analyzeToken) return;
+
+      $("exportProgressBar").style.width = "100%";
+      await waitFrame();
+
+      // Commit
+      state.items = items;
+      state.pages = pages;
+      state.previewBase = state.id.base;
+      state.downloadedPages = new Set();
+      state.currentPage = 0;
+      state.mode = "result";
+
+      $("sidebarInputs").hidden = true;
+      $("sidebarResult").hidden = false;
+      $("previewBtn").hidden = true;
+      $("previewBtn").disabled = false;
+      $("previewBtn").textContent = "Analyze & Preview images";
+      $("backBtn").hidden = false;
+      $("previewEdit").hidden = true;
+      $("previewResult").hidden = false;
+
+      renderResultView();
+    } catch (err) {
+      console.error(err);
+      alert("Analysis failed. Please try again.");
+      $("previewBtn").disabled = false;
+      $("previewBtn").textContent = "Analyze & Preview images";
+    } finally {
+      setTimeout(() => { $("exportOverlay").hidden = true; }, 300);
+    }
   }
-  function setProgress(p, t) {
-    $("exportProgressBar").style.width = p + "%";
-    if (t) $("exportProgressText").textContent = t;
+
+  function exitPreviewMode() {
+    if (state.downloadedPages.size > 0) {
+      saveIdBase(state.previewBase + state.pages.length);
+    }
+    state.mode = "edit";
+    state.downloadedPages = new Set();
+    $("sidebarInputs").hidden = false;
+    $("sidebarResult").hidden = true;
+    $("previewBtn").hidden = false;
+    $("previewBtn").disabled = false;
+    $("backBtn").hidden = true;
+    $("previewEdit").hidden = false;
+    $("previewResult").hidden = true;
+    renderPreview();
   }
-  function hideOverlay() { $("exportOverlay").hidden = true; }
+
+  /* ----- Result view ----- */
+  function renderResultView() {
+    const totalPages = state.pages.length;
+    const [wr, hr] = state.ratio.split(":").map(Number);
+    const aspect = `${wr} / ${hr}`;
+
+    $("resultCount").textContent = `${totalPages} page${totalPages > 1 ? "s" : ""} · ${state.items.length} questions`;
+    $("resultSidebarTitle").textContent = `${totalPages} page${totalPages > 1 ? "s" : ""} generated`;
+
+    // Breakdown text
+    const breakdown = state.pages.map((p, i) => `P${i+1}: ${p.length}`).join("  ·  ");
+    $("resultBreakdown").textContent = breakdown;
+    updateBadge();
+
+    // Sidebar list
+    const sidebarList = $("resultSidebarList");
+    sidebarList.innerHTML = "";
+    for (let i = 0; i < totalPages; i++) {
+      const row = document.createElement("div");
+      row.className = "result-sidebar-item";
+      row.dataset.page = i;
+      row.innerHTML = `
+        <span class="rsi-page">Page ${i + 1}</span>
+        <span class="rsi-count">${state.pages[i].length} Q</span>
+        <span class="rsi-id">${escapeHTML(getIdForPage(i))}</span>`;
+      sidebarList.appendChild(row);
+    }
+
+    // Grid
+    const grid = $("resultGrid");
+    grid.innerHTML = "";
+    for (let i = 0; i < totalPages; i++) {
+      const id = getIdForPage(i);
+      const card = document.createElement("div");
+      card.className = "result-card";
+      card.dataset.page = i;
+
+      const preview = document.createElement("div");
+      preview.className = "result-preview";
+      preview.style.aspectRatio = aspect;
+      preview.innerHTML = `
+        <div class="poster" data-theme="${state.theme}" style="aspect-ratio:${aspect}">
+          ${buildPageHTML(state.pages[i], i, totalPages)}
+        </div>`;
+      card.appendChild(preview);
+
+      const meta = document.createElement("div");
+      meta.className = "result-meta";
+      meta.innerHTML = `
+        <div class="result-meta-text">
+          <span class="result-meta-page">Page ${i + 1} <span class="rmp-count">· ${state.pages[i].length} items</span></span>
+          <span class="result-meta-id">${escapeHTML(id)}</span>
+        </div>
+        <button class="btn-download" data-page="${i}" type="button">Download</button>`;
+      card.appendChild(meta);
+
+      grid.appendChild(card);
+      renderQR(preview.querySelector(".pf-qr"));
+
+      const btn = meta.querySelector(".btn-download");
+      btn.addEventListener("click", () => downloadPage(i, btn));
+    }
+  }
+
+  function updateBadge() {
+    const total = state.pages.length;
+    const done = state.downloadedPages.size;
+    $("resultBadge").textContent = `${done} / ${total} downloaded`;
+  }
+  function markPageDownloaded(i) {
+    state.downloadedPages.add(i);
+    updateBadge();
+    const card = document.querySelector(`.result-card[data-page="${i}"]`);
+    if (card) {
+      const btn = card.querySelector(".btn-download");
+      btn.classList.add("done");
+      btn.textContent = "Downloaded";
+    }
+    const row = document.querySelector(`.result-sidebar-item[data-page="${i}"]`);
+    if (row) row.classList.add("done");
+  }
+
+  /* ----- Download individual page ----- */
   function downloadDataURL(url, name) {
     const a = document.createElement("a");
     a.href = url; a.download = name;
@@ -950,7 +693,6 @@ Ans: Sukapha (চুকাফা)</textarea>
     const [wr, hr] = state.ratio.split(":").map(Number);
     const posterH = Math.round(540 * hr / wr);
 
-    // Offscreen render
     const off = document.createElement("div");
     off.className = "poster";
     off.setAttribute("data-theme", state.theme);
@@ -961,46 +703,40 @@ Ans: Sukapha (চুকাফা)</textarea>
     document.body.appendChild(off);
     renderQR(off.querySelector(".pf-qr"));
 
-    showOverlay(`Rendering ${id}...`);
+    $("exportOverlay").hidden = false;
+    $("exportProgressText").textContent = `Rendering ${id}...`;
+    $("exportProgressBar").style.width = "20%";
+
     await fontsReady();
-    setProgress(40, "Capturing...");
     await waitFrame();
     await new Promise(r => setTimeout(r, 150));
 
     try {
       const canvas = await html2canvas(off, {
-        scale: EXPORT_SCALE,
-        backgroundColor: "#ffffff",
-        useCORS: true,
-        logging: false,
-        imageTimeout: 0
+        scale: EXPORT_SCALE, backgroundColor: "#ffffff",
+        useCORS: true, logging: false, imageTimeout: 0
       });
-      setProgress(90, "Encoding PNG...");
-      const dataURL = canvas.toDataURL("image/png");
-      downloadDataURL(dataURL, "preparekora-" + id.replace(/\//g,"-") + ".png");
-      setProgress(100, "Done.");
-
+      $("exportProgressBar").style.width = "90%";
+      downloadDataURL(canvas.toDataURL("image/png"),
+        "preparekora-" + id.replace(/\//g,"-") + ".png");
+      $("exportProgressBar").style.width = "100%";
       markPageDownloaded(pageIndex);
-
-      // Restore button
       btnEl.classList.add("done");
       btnEl.textContent = "Downloaded";
       btnEl.disabled = false;
     } catch (err) {
-      console.error("Download failed:", err);
+      console.error(err);
       alert("Download failed. Please try again.");
       btnEl.textContent = origLabel;
       btnEl.disabled = false;
     } finally {
       off.remove();
-      setTimeout(hideOverlay, 400);
+      setTimeout(() => { $("exportOverlay").hidden = true; }, 350);
       isExporting = false;
     }
   }
 
-  /* =========================================
-     EVENTS + INIT
-  ========================================= */
+  /* ----- Events ----- */
   function bind() {
     $("input").addEventListener("input", renderPreview);
     $("subject").addEventListener("input", renderPreview);
@@ -1013,7 +749,6 @@ Ans: Sukapha (চুকাফা)</textarea>
         renderPreview();
       });
     });
-
     document.querySelectorAll(".layout-btn").forEach(b => {
       b.addEventListener("click", () => {
         saveLayout(b.dataset.layout);
@@ -1044,7 +779,7 @@ Ans: Sukapha (চুকাফা)</textarea>
     applyThemeUI(state.theme);
     bind();
     renderPreview();
-    console.log("Q&A Studio ready · ID base:", state.id.base, "· Mode:", state.mode);
+    console.log("Q&A Studio ready · intelligent pagination · 4:5 enabled");
   }
 
   if (document.readyState === "loading") {

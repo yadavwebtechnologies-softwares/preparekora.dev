@@ -1,34 +1,29 @@
 "use strict";
 
-/* =========================================
-   Preparekora MCQ Studio
-   Export Controller
-========================================= */
-
 (() => {
 
     const $ = (id) => document.getElementById(id);
     let isExporting = false;
 
     function showOverlay() {
-        const overlay = $("exportOverlay");
-        const bar = $("exportProgressBar");
-        const text = $("exportProgressText");
-        if (overlay) overlay.hidden = false;
-        if (bar) bar.style.width = "10%";
-        if (text) text.textContent = "Rendering high-resolution image...";
+        const o = $("exportOverlay");
+        const b = $("exportProgressBar");
+        const t = $("exportProgressText");
+        if (o) o.hidden = false;
+        if (b) b.style.width = "10%";
+        if (t) t.textContent = "Rendering high-resolution image...";
     }
 
     function setProgress(pct, msg) {
-        const bar = $("exportProgressBar");
-        const text = $("exportProgressText");
-        if (bar) bar.style.width = pct + "%";
-        if (text && msg) text.textContent = msg;
+        const b = $("exportProgressBar");
+        const t = $("exportProgressText");
+        if (b) b.style.width = pct + "%";
+        if (t && msg) t.textContent = msg;
     }
 
     function hideOverlay() {
-        const overlay = $("exportOverlay");
-        if (overlay) overlay.hidden = true;
+        const o = $("exportOverlay");
+        if (o) o.hidden = true;
     }
 
     function buildFilename(id, format, suffix) {
@@ -37,13 +32,10 @@
         return "preparekora-" + safe + "." + (format || "png");
     }
 
-    function triggerDownload(dataURL, filename) {
-        const link = document.createElement("a");
-        link.href = dataURL;
-        link.download = filename;
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
+    function twoFrames() {
+        return new Promise(resolve => {
+            requestAnimationFrame(() => requestAnimationFrame(resolve));
+        });
     }
 
     async function renderPosterToDataURL() {
@@ -52,6 +44,10 @@
         const format = $("exportFormat").value || "png";
         const quality = (parseInt($("exportQuality").value, 10) || 90) / 100;
         const scale = 2 * resolution;
+
+        if (document.fonts && document.fonts.ready) {
+            try { await document.fonts.ready; } catch (_) {}
+        }
 
         const canvas = await html2canvas(poster, {
             scale: scale,
@@ -87,9 +83,14 @@
             const { dataURL, format } = await renderPosterToDataURL();
             setProgress(85, "Encoding image...");
 
-            triggerDownload(dataURL, buildFilename(getIdState().current, format, ""));
-            setProgress(100, "Done.");
+            const link = document.createElement("a");
+            link.href = dataURL;
+            link.download = buildFilename(getIdState().current, format, "");
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
 
+            setProgress(100, "Done.");
             const est = $("exportStatus");
             if (est) est.textContent = "Image downloaded successfully.";
 
@@ -108,7 +109,7 @@
     }
 
 
-    /* Dual export (MCQ only) */
+    /* Dual export — FIXED: render both first, then synchronous downloads */
 
     async function runExportBoth() {
         if (isExporting) return;
@@ -118,37 +119,66 @@
         if (!editor || !editor.setExplanation) { alert("Editor not ready."); return; }
 
         const originalState = editor.isExplanationOn();
-        isExporting = true;
+        const id = getIdState().current;
 
+        isExporting = true;
         showOverlay();
 
         try {
-            // 1) Normal MCQ (no explanation)
+            /* ---------- Step 1: render WITHOUT explanation ---------- */
             setProgress(10, "Rendering normal MCQ...");
             editor.setExplanation(false);
-            await new Promise(r => setTimeout(r, 180));
+            await twoFrames();
+            await new Promise(r => setTimeout(r, 150));
             const r1 = await renderPosterToDataURL();
 
-            // 2) MCQ with explanation
+            /* ---------- Step 2: render WITH explanation ---------- */
             setProgress(50, "Rendering MCQ with explanation...");
             editor.setExplanation(true);
-            await new Promise(r => setTimeout(r, 180));
+            await twoFrames();
+            await new Promise(r => setTimeout(r, 150));
             const r2 = await renderPosterToDataURL();
 
-            setProgress(85, "Downloading both variants...");
+            /* ---------- Step 3: restore UI state ---------- */
+            editor.setExplanation(originalState);
+            await twoFrames();
 
-            const id = getIdState().current;
-            triggerDownload(r1.dataURL, buildFilename(id, r1.format, "Q"));
-            await new Promise(r => setTimeout(r, 200));
-            triggerDownload(r2.dataURL, buildFilename(id, r2.format, "E"));
+            /* ---------- Safety: confirm images differ ---------- */
+            if (r1.dataURL === r2.dataURL) {
+                console.warn("Both renders produced identical dataURL — retrying with longer wait.");
+                editor.setExplanation(false);
+                await new Promise(r => setTimeout(r, 400));
+                const retry = await renderPosterToDataURL();
+                r1.dataURL = retry.dataURL;
+                editor.setExplanation(originalState);
+            }
+
+            /* ---------- Step 4: BOTH downloads synchronously ---------- */
+            setProgress(92, "Downloading both variants...");
+
+            const link1 = document.createElement("a");
+            link1.href = r1.dataURL;
+            link1.download = buildFilename(id, r1.format, "Q");
+            const link2 = document.createElement("a");
+            link2.href = r2.dataURL;
+            link2.download = buildFilename(id, r2.format, "E");
+
+            document.body.appendChild(link1);
+            document.body.appendChild(link2);
+
+            // Synchronous clicks — preserves gesture context, allows 2 downloads
+            link1.click();
+            link2.click();
+
+            // Defer cleanup
+            setTimeout(() => { link1.remove(); link2.remove(); }, 1000);
 
             setProgress(100, "Both downloaded.");
-
             const est = $("exportStatus");
             if (est) est.textContent = "Both variants downloaded (Normal + Explanation).";
 
             if (editor.incrementId) {
-                setTimeout(() => editor.incrementId(), 500);
+                setTimeout(() => editor.incrementId(), 700);
             }
         } catch (err) {
             console.error("Both-export failed:", err);
@@ -157,7 +187,7 @@
             alert("Export failed. Please try again.");
         } finally {
             editor.setExplanation(originalState);
-            setTimeout(hideOverlay, 600);
+            setTimeout(hideOverlay, 700);
             isExporting = false;
         }
     }
@@ -166,10 +196,8 @@
     function init() {
         const btn = $("exportButton");
         if (btn) btn.addEventListener("click", runExport);
-
         const bothBtn = $("exportBothButton");
         if (bothBtn) bothBtn.addEventListener("click", runExportBoth);
-
         console.log("Preparekora exporter ready.");
     }
 

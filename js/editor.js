@@ -1,14 +1,8 @@
 "use strict";
 
-/* =========================================
-   Preparekora MCQ Studio
-   Editor Controller (Bilingual MCQ + Q&A)
-========================================= */
-
 (() => {
 
     let activeModule = "mcq";
-
     const brandState = { name: "preparekora", domain: ".in" };
 
     const idState = {
@@ -42,11 +36,7 @@
     };
 
     const $ = (id) => document.getElementById(id);
-
     let fitTimer = null;
-
-
-    /* Helpers */
 
     function pad2(n) { return String(n).padStart(2, "0"); }
     function pad4(n) { return String(n).padStart(4, "0"); }
@@ -64,7 +54,7 @@
     }
 
 
-    /* ID management */
+    /* ID */
 
     function loadIdState() {
         const now = new Date().getMonth() + 1;
@@ -72,8 +62,7 @@
         let counter = parseInt(localStorage.getItem("pk_id_counter") || "1", 10);
 
         if (storedMonth !== now) {
-            storedMonth = now;
-            counter = 1;
+            storedMonth = now; counter = 1;
             localStorage.setItem("pk_id_month", String(now));
             localStorage.setItem("pk_id_counter", "1");
         }
@@ -85,12 +74,8 @@
 
         const monthEl = $("currentIdMonth");
         if (monthEl) monthEl.textContent = pad2(now);
-
         const idInput = $("mcqId");
-        if (idInput) {
-            idInput.value = idState.current;
-            idInput.readOnly = !idState.manual;
-        }
+        if (idInput) { idInput.value = idState.current; idInput.readOnly = !idState.manual; }
 
         const manualStatus = $("manualIdStatus");
         if (manualStatus) {
@@ -98,7 +83,6 @@
                 ? "Manual editing is enabled. Modify the ID carefully."
                 : "Manual editing is disabled. Image ID is automatically managed.";
         }
-
         const toggle = $("manualIdToggle");
         if (toggle) toggle.checked = idState.manual;
     }
@@ -120,7 +104,7 @@
         const r = {
             subjectEn: "", subjectAs: "",
             questionEn: "", questionAs: "",
-            options: { A: {en:"",as:""}, B: {en:"",as:""}, C: {en:"",as:""}, D: {en:"",as:""} },
+            options: { A:{en:"",as:""}, B:{en:"",as:""}, C:{en:"",as:""}, D:{en:"",as:""} },
             answer: "", explanationEn: "", explanationAs: ""
         };
 
@@ -132,9 +116,8 @@
             if ((m = t.match(/^Subject\s*[-\/]?\s*EN\s*[:：]\s*(.+)/i))) r.subjectEn = m[1].trim();
             else if ((m = t.match(/^Subject\s*[-\/]?\s*AS\s*[:：]\s*(.+)/i))) r.subjectAs = m[1].trim();
             else if ((m = t.match(/^Subject\s*[:：]\s*(.+)/i))) {
-                const parts = m[1].trim().split(/\s*[\/|]\s*/);
-                r.subjectEn = parts[0] || "";
-                r.subjectAs = parts[1] || "";
+                const p = m[1].trim().split(/\s*[\/|]\s*/);
+                r.subjectEn = p[0] || ""; r.subjectAs = p[1] || "";
             }
             else if ((m = t.match(/^Q\s*[-\/]?\s*EN\s*[:：]\s*(.+)/i))) r.questionEn = m[1].trim();
             else if ((m = t.match(/^Q\s*[-\/]?\s*AS\s*[:：]\s*(.+)/i))) r.questionAs = m[1].trim();
@@ -146,7 +129,6 @@
             else if ((m = t.match(/^([A-D])\s*[-\/]?\s*AS\s*[:：]\s*(.+)/i))) r.options[m[1].toUpperCase()].as = m[2].trim();
             else if ((m = t.match(/^([A-D])\s*[):]\s*(.+)/i))) r.options[m[1].toUpperCase()].en = m[2].trim();
         });
-
         return r;
     }
 
@@ -165,9 +147,8 @@
             if ((m = t.match(/^Subject\s*[-\/]?\s*EN\s*[:：]\s*(.+)/i))) r.subjectEn = m[1].trim();
             else if ((m = t.match(/^Subject\s*[-\/]?\s*AS\s*[:：]\s*(.+)/i))) r.subjectAs = m[1].trim();
             else if ((m = t.match(/^Subject\s*[:：]\s*(.+)/i))) {
-                const parts = m[1].trim().split(/\s*[\/|]\s*/);
-                r.subjectEn = parts[0] || "";
-                r.subjectAs = parts[1] || "";
+                const p = m[1].trim().split(/\s*[\/|]\s*/);
+                r.subjectEn = p[0] || ""; r.subjectAs = p[1] || "";
             }
             else if ((m = t.match(/^Q\s*[-\/]?\s*EN\s*[:：]\s*(.+)/i))) r.questionEn = m[1].trim();
             else if ((m = t.match(/^Q\s*[-\/]?\s*AS\s*[:：]\s*(.+)/i))) r.questionAs = m[1].trim();
@@ -177,27 +158,28 @@
             else if ((m = t.match(/^Ans(?:wer)?\s*[-\/]?\s*EN\s*[:：]\s*(.+)/i)) && !r.explanationEn) r.explanationEn = m[1].trim();
             else if ((m = t.match(/^Ans(?:wer)?\s*[-\/]?\s*AS\s*[:：]\s*(.+)/i)) && !r.explanationAs) r.explanationAs = m[1].trim();
         });
-
         return r;
     }
 
 
-    /* Poster builders */
+    /* Builders */
 
     function buildHeaderHTML() {
         return `
             <header class="poster-header">
                 <div class="poster-brand">
-                    <span class="poster-brand-name" id="previewBrandName">${escapeHTML(brandState.name)}</span><span class="poster-brand-domain" id="previewBrandDomain">${escapeHTML(brandState.domain)}</span>
+                    <span class="poster-brand-name">${escapeHTML(brandState.name)}</span><span class="poster-brand-domain">${escapeHTML(brandState.domain)}</span>
                 </div>
-                <div class="poster-id" id="previewMcqId">${escapeHTML(idState.current)}</div>
+                <div class="poster-id">${escapeHTML(idState.current)}</div>
             </header>
         `;
     }
 
-    function buildFooterHTML() {
+    function buildFooterHTML(explanationHTML) {
+        const hasExpl = !!explanationHTML;
         return `
-            <footer class="poster-footer">
+            <footer class="poster-footer${hasExpl ? " poster-footer-with-explanation" : ""}">
+                ${hasExpl ? explanationHTML : ""}
                 <div class="poster-qr-container"><div id="previewQrCode"></div></div>
             </footer>
         `;
@@ -262,16 +244,15 @@
             <section class="poster-content">
                 <div class="poster-question-area">
                     ${buildSubjectHTML(d.subjectEn, d.subjectAs)}
-                    <h1 class="poster-question" id="previewQuestion">${buildQuestionHTML(d.questionEn, d.questionAs)}</h1>
+                    <h1 class="poster-question">${buildQuestionHTML(d.questionEn, d.questionAs)}</h1>
                     <div class="poster-options">${optHTML}</div>
                     <div class="poster-comments">
                         <span class="poster-comments-title">Answer:</span>
-                        <span class="poster-comments-text" id="previewCommentsText">${escapeHTML(answerText)}</span>
+                        <span class="poster-comments-text">${escapeHTML(answerText)}</span>
                     </div>
-                    ${explHTML}
                 </div>
             </section>
-            ${buildFooterHTML()}
+            ${buildFooterHTML(explHTML)}
         `;
     }
 
@@ -281,11 +262,11 @@
             <section class="poster-content">
                 <div class="poster-question-area">
                     ${buildSubjectHTML(d.subjectEn, d.subjectAs)}
-                    <h1 class="poster-question" id="previewQuestion">${buildQuestionHTML(d.questionEn, d.questionAs)}</h1>
+                    <h1 class="poster-question">${buildQuestionHTML(d.questionEn, d.questionAs)}</h1>
                     ${buildExplanationHTML(d.explanationEn, d.explanationAs)}
                 </div>
             </section>
-            ${buildFooterHTML()}
+            ${buildFooterHTML("")}
         `;
     }
 
@@ -317,9 +298,6 @@
         scheduleFit();
     }
 
-
-    /* Sync hidden compat fields */
-
     function syncHiddenFields(d, mode) {
         const set = (id, v) => { const el = $(id); if (el) el.value = v; };
 
@@ -334,10 +312,7 @@
         } else {
             set("subjectName", d.subjectEn || d.subjectAs);
             set("questionText", d.questionEn || d.questionAs);
-            set("optionA", "");
-            set("optionB", "");
-            set("optionC", "");
-            set("optionD", "");
+            set("optionA", ""); set("optionB", ""); set("optionC", ""); set("optionD", "");
             set("commentsText", d.explanationEn || d.explanationAs || "");
         }
     }
@@ -381,7 +356,7 @@
     }
 
 
-    /* Auto-fit */
+    /* Fit (with footer awareness) */
 
     function fitPoster() {
         const poster = $("poster");
@@ -393,29 +368,48 @@
         poster.style.setProperty("--fit-scale", "1");
         void area.offsetHeight;
 
-        const avail = content.clientHeight;
-        let used = area.offsetHeight;
-        let scale = 1;
-        const minScale = 0.55;
-        const maxScale = 1.30;
+        const minScale = 0.50;
+        const maxScale = 1.35;
         const step = 0.02;
+        let scale = 1;
         let safety = 0;
 
-        while (used > avail && scale > minScale && safety < 40) {
+        // Shrink until question fits content
+        let avail = content.clientHeight;
+        let used = area.offsetHeight;
+        while (used > avail && scale > minScale && safety < 45) {
             scale -= step;
             poster.style.setProperty("--fit-scale", scale.toFixed(3));
             void area.offsetHeight;
             used = area.offsetHeight;
+            avail = content.clientHeight;
             safety++;
         }
 
+        // Also shrink if the whole poster overflows (footer/explanation case)
+        const header = poster.querySelector(".poster-header");
+        const footer = poster.querySelector(".poster-footer");
+        const posterInner = poster.clientHeight - 60; // padding 30 top + 30 bottom
+        while (scale > minScale && safety < 80) {
+            const hH = header ? header.offsetHeight : 0;
+            const cH = content.offsetHeight;
+            const fH = footer ? footer.offsetHeight : 0;
+            if (hH + cH + fH <= posterInner) break;
+            scale -= step;
+            poster.style.setProperty("--fit-scale", scale.toFixed(3));
+            void area.offsetHeight;
+            safety++;
+        }
+
+        // Grow only if content is short
         if (scale === 1) {
             let grow = 0;
-            while (used < avail * 0.62 && scale < maxScale && grow < 25) {
+            while (used < avail * 0.62 && scale < maxScale && grow < 30) {
                 scale += step;
                 poster.style.setProperty("--fit-scale", scale.toFixed(3));
                 void area.offsetHeight;
                 used = area.offsetHeight;
+                avail = content.clientHeight;
                 grow++;
             }
         }
@@ -428,9 +422,7 @@
         const el = $("previewQrCode");
         if (!el) return;
         el.innerHTML = "";
-
         const url = ($("qrUrl") && $("qrUrl").value.trim()) || "https://preparekora.in";
-
         if (window.QRCode) {
             try {
                 new QRCode(el, {
@@ -456,11 +448,9 @@
         } else {
             dims = ratioMap[ratio] || ratioMap["4:3"];
         }
-
         const res = parseInt($("exportResolution").value, 10) || 4;
         const dimEl = $("exportDimensions");
         if (dimEl) dimEl.textContent = (dims.w * res) + " × " + (dims.h * res) + " px";
-
         const fmt = ($("exportFormat").value || "png").toUpperCase();
         const fmtEl = $("exportFormatLabel");
         if (fmtEl) fmtEl.textContent = fmt;
@@ -484,7 +474,6 @@
         if (mcqFG) mcqFG.hidden = mod !== "mcq";
         if (qaFG)  qaFG.hidden  = mod !== "qa";
 
-        // Toggle visibility of MCQ-only controls
         const mcqToggleGroup = $("mcqOutputToggleGroup");
         if (mcqToggleGroup) mcqToggleGroup.hidden = mod !== "mcq";
 
@@ -513,9 +502,6 @@
         updateSaveStatus("Ready");
     }
 
-
-    /* Save status */
-
     function updateSaveStatus(msg) {
         const el = $("saveStatus");
         if (el) el.textContent = msg || "Ready";
@@ -535,8 +521,8 @@
 
         const ratio = $("aspectRatio");
         if (ratio) ratio.addEventListener("change", () => {
-            const customFields = $("customSizeFields");
-            if (customFields) customFields.hidden = ratio.value !== "custom";
+            const cf = $("customSizeFields");
+            if (cf) cf.hidden = ratio.value !== "custom";
             renderPoster();
         });
 
@@ -548,7 +534,6 @@
         const qrUrl = $("qrUrl");
         if (qrUrl) qrUrl.addEventListener("input", () => { initQR(); scheduleFit(); });
 
-        // Explanation toggle
         const explToggle = $("mcqIncludeExplanation");
         if (explToggle) explToggle.addEventListener("change", () => {
             renderPoster();
@@ -564,7 +549,6 @@
             if (resSel) resSel.disabled = false;
             if (expBtn) expBtn.disabled = false;
             if (bothBtn && activeModule === "mcq") bothBtn.disabled = false;
-
             const st = $("previewStatus");
             if (st) st.textContent = "Preview updated.";
             const est = $("exportStatus");
@@ -584,8 +568,8 @@
 
         const quality = $("exportQuality");
         if (quality) quality.addEventListener("input", () => {
-            const val = $("qualityValue");
-            if (val) val.textContent = quality.value + "%";
+            const v = $("qualityValue");
+            if (v) v.textContent = quality.value + "%";
         });
 
         const manualToggle = $("manualIdToggle");
@@ -611,8 +595,7 @@
 
         const dl = $("downloadButton");
         if (dl) dl.addEventListener("click", () => {
-            const btn = $("exportButton");
-            if (btn) btn.click();
+            const b = $("exportButton"); if (b) b.click();
         });
 
         window.addEventListener("resize", scheduleFit);
@@ -631,11 +614,7 @@
     }
 
     window.PreparekoraEditor = {
-        setModule,
-        updateSaveStatus,
-        renderPoster,
-        fitPoster,
-        incrementId,
+        setModule, updateSaveStatus, renderPoster, fitPoster, incrementId,
         getIdState: () => ({ ...idState }),
         isExplanationOn: () => {
             const t = $("mcqIncludeExplanation");

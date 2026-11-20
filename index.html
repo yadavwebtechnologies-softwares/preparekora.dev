@@ -4,14 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#ffffff">
-
     <title>Preparekora MCQ Studio</title>
     <meta name="description" content="Create and export professional Preparekora MCQ and Q&A images.">
-
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-
     <link rel="stylesheet" href="css/style.css">
 </head>
 
@@ -19,50 +16,58 @@
 
 <div class="app" id="app">
 
+    <!-- =========================================
+         TOPBAR — modern navbar
+    ========================================== -->
     <header class="topbar">
+
         <a href="#" class="app-brand" aria-label="Preparekora Studio">
-            <span>preparekora</span><span class="brand-domain">.in</span>
-            <small>MCQ Studio</small>
+            <span class="brand-name">preparekora<span class="brand-domain">.in</span></span>
+            <span class="brand-tag">Studio</span>
         </a>
+
+        <nav class="module-switcher" role="tablist" aria-label="Image module" id="moduleTabs">
+            <button class="module-tab active" role="tab" aria-selected="true" data-module="mcq" id="tabMcq" type="button">
+                MCQ Image
+            </button>
+            <button class="module-tab" role="tab" aria-selected="false" data-module="qa" id="tabQa" type="button">
+                Q&amp;A Image
+            </button>
+        </nav>
+
         <div class="topbar-actions">
             <span class="save-status" id="saveStatus">Ready</span>
         </div>
+
     </header>
 
 
+    <!-- =========================================
+         WORKSPACE
+    ========================================== -->
     <main class="workspace">
 
+        <!-- =========================================
+             SIDEBAR
+        ========================================== -->
         <aside class="editor-panel" id="editorPanel">
 
-            <div class="panel-heading" id="panelHeading" role="button" tabindex="0" title="Switch to MCQ module">
-                <div>
+            <div class="panel-scroll">
+
+                <div class="panel-heading" id="panelHeading" role="button" tabindex="0">
                     <h1 id="panelHeadingTitle">Create MCQ image</h1>
                     <p id="panelHeadingDesc">Follow the steps to create your question image.</p>
                 </div>
-            </div>
 
+                <div class="editor-section active" id="contentSection">
 
-            <div class="module-tabs" role="tablist" aria-label="Image module" id="moduleTabs">
-                <button class="module-tab active" role="tab" aria-selected="true" data-module="mcq" id="tabMcq" type="button">MCQ Image</button>
-                <button class="module-tab" role="tab" aria-selected="false" data-module="qa" id="tabQa" type="button">Q&amp;A Image</button>
-            </div>
+                    <!-- ========== GROUP: Content ========== -->
+                    <section class="form-group">
+                        <h2 class="group-title">Content</h2>
 
-
-            <section class="editor-section active" id="contentSection">
-
-                <!-- STEP 1 -->
-
-                <div class="section-heading">
-                    <h2>
-                        <span class="step-number">1</span>
-                        <span id="step1Title">Paste your MCQ format</span>
-                    </h2>
-                    <p id="step1Desc">Paste the complete bilingual question with four options, answer, and explanation.</p>
-                </div>
-
-                <div class="field-group" id="mcqFieldGroup">
-                    <label for="mcqContent">MCQ format (EN + AS)</label>
-                    <textarea id="mcqContent" rows="14" spellcheck="false">Subject-EN: Reasoning
+                        <div class="field-group" id="mcqFieldGroup">
+                            <label for="mcqContent">MCQ format (EN + AS)</label>
+                            <textarea id="mcqContent" rows="12" spellcheck="false">Subject-EN: Reasoning
 Subject-AS: ৰিজনিং
 Q-EN: Book is related to Reading in the same way as Food is related to?
 Q-AS: কিতাপ পঢ়াৰ সৈতে পঢ়াৰ দৰে খাদ্যৰ সৈতে সম্পৰ্ক কি?
@@ -77,236 +82,186 @@ D-AS: কিনা
 Ans: B
 Exp-EN: Food is consumed by eating, just as a book is consumed by reading.
 Exp-AS: খাদ্য খোৱাৰ দ্বাৰা গ্ৰহণ কৰা হয়, যেনেকৈ কিতাপ পঢ়াৰ দ্বাৰা গ্ৰহণ কৰা হয়।</textarea>
-                    <p class="field-help">
-                        Labels: Subject-EN, Subject-AS, Q-EN, Q-AS, A-EN, A-AS, B-EN, B-AS, C-EN, C-AS, D-EN, D-AS, Ans, Exp-EN, Exp-AS.
-                    </p>
-                </div>
+                            <p class="field-help">Labels: Subject-EN, Subject-AS, Q-EN, Q-AS, A-EN, A-AS, B-EN, B-AS, C-EN, C-AS, D-EN, D-AS, Ans, Exp-EN, Exp-AS.</p>
+                        </div>
 
-                <div class="field-group" id="qaFieldGroup" hidden>
-                    <label for="qaContent">Q&amp;A format (EN + AS)</label>
-                    <textarea id="qaContent" rows="14" spellcheck="false">Subject-EN: History
+                        <div class="field-group" id="qaFieldGroup" hidden>
+                            <label for="qaContent">Q&amp;A format (EN + AS)</label>
+                            <textarea id="qaContent" rows="12" spellcheck="false">Subject-EN: History
 Subject-AS: ইতিহাস
 Q-EN: Who was the first President of India?
 Q-AS: ভাৰতৰ প্ৰথম ৰাষ্ট্ৰপতি কোন আছিল?
 Exp-EN: Dr. Rajendra Prasad served as the first President of India from 1950 to 1962.
 Exp-AS: ড° ৰাজেন্দ্ৰ প্ৰসাদে ১৯৫০ চনৰ পৰা ১৯৬২ চনলৈকে ভাৰতৰ প্ৰথম ৰাষ্ট্ৰপতি হিচাপে কাৰ্যনিৰ্বাহ কৰিছিল।</textarea>
-                    <p class="field-help">
-                        Labels: Subject-EN, Subject-AS, Q-EN, Q-AS, Exp-EN, Exp-AS.
-                    </p>
-                </div>
+                            <p class="field-help">Labels: Subject-EN, Subject-AS, Q-EN, Q-AS, Exp-EN, Exp-AS.</p>
+                        </div>
 
-
-                <!-- STEP 2 -->
-
-                <div class="section-heading workflow-heading">
-                    <h2>
-                        <span class="step-number">2</span>
-                        Select image ratio
-                    </h2>
-                    <p>Choose the size of your final image.</p>
-                </div>
-
-                <div class="field-group">
-                    <label for="aspectRatio">Aspect ratio</label>
-                    <select id="aspectRatio">
-                        <option value="1:1">1:1 — Square</option>
-                        <option value="16:9">16:9 — Landscape</option>
-                        <option value="9:16">9:16 — Portrait</option>
-                        <option value="4:3" selected>4:3 — Landscape</option>
-                        <option value="3:4">3:4 — Portrait</option>
-                        <option value="custom">Custom size</option>
-                    </select>
-                </div>
-
-                <div class="custom-size-fields" id="customSizeFields" hidden>
-                    <div class="field-group">
-                        <label for="customWidth">Width (px)</label>
-                        <input type="number" id="customWidth" value="1080" min="100" max="12000">
-                    </div>
-                    <div class="field-group">
-                        <label for="customHeight">Height (px)</label>
-                        <input type="number" id="customHeight" value="1350" min="100" max="12000">
-                    </div>
-                </div>
-
-                <div class="canvas-information">
-                    <span>Canvas dimensions</span>
-                    <strong id="canvasDimensions">1080 × 1350 px</strong>
-                    <span id="canvasRatioLabel">4:3 aspect ratio</span>
-                </div>
-
-                <div class="field-group">
-                    <label for="qrUrl">QR code destination URL</label>
-                    <input type="url" id="qrUrl" value="" placeholder="https://your-test-link.com">
-                    <p class="field-help">
-                        Enter the actual URL you want people to open after scanning the QR code.
-                    </p>
-                </div>
-
-
-                <!-- STEP 3 -->
-
-                <div class="workflow-action">
-
-                    <div class="field-group" id="mcqOutputToggleGroup">
-                        <div class="setting-row">
-                            <div class="setting-description">
+                        <div class="toggle-row" id="mcqOutputToggleGroup">
+                            <div class="toggle-desc">
                                 <strong>Include explanation</strong>
-                                <p>Off = plain MCQ image. On = MCQ with explanation.</p>
+                                <p>Off = plain MCQ. On = MCQ with explanation.</p>
                             </div>
                             <label class="toggle-switch" for="mcqIncludeExplanation">
-                                <input type="checkbox" id="mcqIncludeExplanation" aria-label="Include explanation in MCQ image">
+                                <input type="checkbox" id="mcqIncludeExplanation">
                                 <span class="toggle-slider"></span>
                             </label>
                         </div>
-                    </div>
+                    </section>
 
-                    <button class="button button-primary button-full" id="previewButton" type="button">
-                        Preview image
-                    </button>
-                    <p id="previewStatus" class="export-note" aria-live="polite">
-                        Paste your format and select an image ratio to continue.
-                    </p>
+                    <!-- ========== GROUP: Image Settings ========== -->
+                    <section class="form-group">
+                        <h2 class="group-title">Image settings</h2>
+
+                        <div class="field-group">
+                            <label for="aspectRatio">Aspect ratio</label>
+                            <select id="aspectRatio">
+                                <option value="1:1">1:1 — Square</option>
+                                <option value="16:9">16:9 — Landscape</option>
+                                <option value="9:16">9:16 — Portrait</option>
+                                <option value="4:3" selected>4:3 — Landscape</option>
+                                <option value="3:4">3:4 — Portrait</option>
+                                <option value="custom">Custom size</option>
+                            </select>
+                        </div>
+
+                        <div class="custom-size-fields" id="customSizeFields" hidden>
+                            <div class="field-group">
+                                <label for="customWidth">Width (px)</label>
+                                <input type="number" id="customWidth" value="1080" min="100" max="12000">
+                            </div>
+                            <div class="field-group">
+                                <label for="customHeight">Height (px)</label>
+                                <input type="number" id="customHeight" value="1350" min="100" max="12000">
+                            </div>
+                        </div>
+
+                        <div class="info-block">
+                            <div class="info-row">
+                                <span>Dimensions</span>
+                                <strong id="canvasDimensions">1080 × 1350 px</strong>
+                            </div>
+                            <div class="info-row">
+                                <span>Ratio</span>
+                                <span id="canvasRatioLabel">4:3</span>
+                            </div>
+                        </div>
+
+                        <div class="field-group">
+                            <label for="qrUrl">QR destination URL</label>
+                            <input type="url" id="qrUrl" value="" placeholder="https://your-test-link.com">
+                            <p class="field-help">URL that opens when someone scans the QR code.</p>
+                        </div>
+                    </section>
+
+                    <!-- ========== GROUP: Export ========== -->
+                    <section class="form-group">
+                        <h2 class="group-title">Export</h2>
+
+                        <div class="field-group">
+                            <label for="exportResolution">Output resolution</label>
+                            <select id="exportResolution" disabled>
+                                <option value="2">Standard — 2×</option>
+                                <option value="4" selected>4K — High resolution</option>
+                                <option value="8">8K — Maximum resolution</option>
+                            </select>
+                        </div>
+
+                        <div class="info-block">
+                            <div class="info-row">
+                                <span>Output size</span>
+                                <strong id="exportDimensions">4320 × 5400 px</strong>
+                            </div>
+                            <div class="info-row">
+                                <span>Format</span>
+                                <span id="exportFormatLabel">PNG</span>
+                            </div>
+                        </div>
+
+                        <details class="advanced-settings">
+                            <summary>Advanced settings</summary>
+
+                            <div class="field-group">
+                                <label for="exportFormat">Image format</label>
+                                <select id="exportFormat">
+                                    <option value="png" selected>PNG — Lossless</option>
+                                    <option value="webp">WebP — Smaller file</option>
+                                </select>
+                            </div>
+
+                            <div class="field-group" id="qualityField" hidden>
+                                <label for="exportQuality">WebP quality: <span id="qualityValue">90%</span></label>
+                                <input type="range" id="exportQuality" min="50" max="100" value="90">
+                            </div>
+
+                            <div class="settings-information">
+                                <strong>Automatic image ID</strong>
+                                <p>Restarts at 0001 each new month.</p>
+                                <div class="id-format-example">
+                                    <span>PR</span><span>/</span>
+                                    <span id="currentIdMonth">11</span><span>/</span>
+                                    <span id="currentIdSeq">0001</span>
+                                </div>
+                            </div>
+
+                            <div class="toggle-row">
+                                <div class="toggle-desc">
+                                    <strong>Allow manual ID editing</strong>
+                                    <p>Emergency corrections only.</p>
+                                </div>
+                                <label class="toggle-switch" for="manualIdToggle">
+                                    <input type="checkbox" id="manualIdToggle">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+
+                            <div class="manual-id-status" id="manualIdStatus">
+                                Manual editing is disabled. Image ID is automatically managed.
+                            </div>
+                        </details>
+                    </section>
+
                 </div>
 
-
-                <!-- STEP 4 -->
-
-                <div class="section-heading workflow-heading">
-                    <h2>
-                        <span class="step-number">4</span>
-                        Select resolution
-                    </h2>
-                    <p>Choose the quality of your downloaded image.</p>
+                <!-- Hidden compat fields -->
+                <div hidden aria-hidden="true">
+                    <input type="text" id="brandName" value="preparekora" maxlength="30">
+                    <input type="text" id="brandDomain" value=".in" maxlength="15">
+                    <input type="text" id="mcqId" value="PR/11/0001" maxlength="40" readonly>
+                    <input type="text" id="subjectName" value="Reasoning" maxlength="60">
+                    <textarea id="questionText" rows="4">Book is related to Reading in the same way as Food is related to?</textarea>
+                    <input type="text" id="optionA" value="Cooking">
+                    <input type="text" id="optionB" value="Eating">
+                    <input type="text" id="optionC" value="Kitchen">
+                    <input type="text" id="optionD" value="Buying">
+                    <input type="text" id="commentsTitle" value="Comments" maxlength="50">
+                    <input type="text" id="commentsText" value="The correct option" maxlength="100">
+                    <input type="color" id="canvasBackground" value="#ffffff">
+                    <span id="canvasBackgroundValue">#FFFFFF</span>
+                    <span id="previewFormat"></span>
                 </div>
 
-                <div class="field-group">
-                    <label for="exportResolution">Output resolution</label>
-                    <select id="exportResolution" disabled>
-                        <option value="2">Standard — 2×</option>
-                        <option value="4" selected>4K — High resolution</option>
-                        <option value="8">8K — Maximum resolution</option>
-                    </select>
-                    <p class="field-help">
-                        Higher resolution produces larger image dimensions.
-                    </p>
-                </div>
+            </div>
 
-                <div class="export-information">
-                    <div>
-                        <span>Output dimensions</span>
-                        <strong id="exportDimensions">4320 × 5400 px</strong>
-                    </div>
-                    <div>
-                        <span>Image format</span>
-                        <strong id="exportFormatLabel">PNG</strong>
-                    </div>
-                </div>
-
-
-                <!-- STEP 5 -->
-
-                <div class="section-heading workflow-heading">
-                    <h2>
-                        <span class="step-number">5</span>
-                        Download image
-                    </h2>
-                    <p>Your final image will not include editor controls.</p>
-                </div>
-
+            <!-- ========== STICKY ACTION BAR ========== -->
+            <div class="action-bar">
+                <button class="button button-secondary button-full" id="previewButton" type="button">
+                    Preview image
+                </button>
                 <button class="button button-primary button-full" id="exportButton" type="button" disabled>
                     Download image
                 </button>
-
-                <button class="button button-secondary button-full" id="exportBothButton" type="button" disabled hidden>
-                    Download both variants (Normal + Explanation)
+                <button class="button button-ghost button-full" id="exportBothButton" type="button" disabled hidden>
+                    Download both variants
                 </button>
-
-                <p class="export-note" id="exportStatus" aria-live="polite">
-                    Complete the preview and select a resolution first.
-                </p>
-
-
-                <!-- ADVANCED -->
-
-                <details class="advanced-settings">
-                    <summary>Advanced settings</summary>
-
-                    <div class="field-group">
-                        <label for="exportFormat">Image format</label>
-                        <select id="exportFormat">
-                            <option value="png" selected>PNG — Lossless quality</option>
-                            <option value="webp">WebP — Smaller file size</option>
-                        </select>
-                    </div>
-
-                    <div class="field-group" id="qualityField" hidden>
-                        <label for="exportQuality">
-                            WebP quality:
-                            <span id="qualityValue">90%</span>
-                        </label>
-                        <input type="range" id="exportQuality" min="50" max="100" value="90">
-                    </div>
-
-                    <div class="settings-information">
-                        <strong>Automatic image ID</strong>
-                        <p>
-                            Every new image receives an automatic ID.
-                            The sequence restarts from 0001 when a new month begins.
-                        </p>
-                        <div class="id-format-example">
-                            <span>PR</span>
-                            <span>/</span>
-                            <span id="currentIdMonth">11</span>
-                            <span>/</span>
-                            <span id="currentIdSeq">0001</span>
-                        </div>
-                        <div class="id-format-legend">
-                            <span>Global prefix</span>
-                            <span>Month</span>
-                            <span>Image number</span>
-                        </div>
-                    </div>
-
-                    <div class="setting-row">
-                        <div class="setting-description">
-                            <strong>Allow manual ID editing</strong>
-                            <p>Enable only when an emergency correction is required.</p>
-                        </div>
-                        <label class="toggle-switch" for="manualIdToggle">
-                            <input type="checkbox" id="manualIdToggle" aria-label="Allow manual ID editing">
-                            <span class="toggle-slider"></span>
-                        </label>
-                    </div>
-
-                    <div class="manual-id-status" id="manualIdStatus" aria-live="polite">
-                        Manual editing is disabled. Image ID is automatically managed.
-                    </div>
-                </details>
-
-            </section>
-
-
-            <div hidden aria-hidden="true">
-                <input type="text" id="brandName" value="preparekora" maxlength="30">
-                <input type="text" id="brandDomain" value=".in" maxlength="15">
-                <input type="text" id="mcqId" value="PR/11/0001" maxlength="40" readonly>
-                <input type="text" id="subjectName" value="Reasoning" maxlength="60">
-                <textarea id="questionText" rows="4">Book is related to Reading in the same way as Food is related to?</textarea>
-                <input type="text" id="optionA" value="Cooking">
-                <input type="text" id="optionB" value="Eating">
-                <input type="text" id="optionC" value="Kitchen">
-                <input type="text" id="optionD" value="Buying">
-                <input type="text" id="commentsTitle" value="Comments" maxlength="50">
-                <input type="text" id="commentsText" value="The correct option" maxlength="100">
-                <input type="color" id="canvasBackground" value="#ffffff">
-                <span id="canvasBackgroundValue">#FFFFFF</span>
-                <span id="previewFormat"></span>
+                <p class="action-status" id="previewStatus" aria-live="polite">Paste your format and select a ratio to continue.</p>
             </div>
 
         </aside>
 
 
+        <!-- =========================================
+             PREVIEW PANEL
+        ========================================== -->
         <section class="preview-panel" id="previewPanel">
 
             <div class="preview-toolbar">
@@ -317,7 +272,6 @@ Exp-AS: ড° ৰাজেন্দ্ৰ প্ৰসাদে ১৯৫০ চ
                 <div class="preview-size" id="previewSize">1080 × 1350</div>
             </div>
 
-            <!-- Fallback default poster — overwritten by JS on load -->
             <div class="preview-stage" id="previewStage">
                 <main class="poster poster-bilingual" id="poster">
                     <header class="poster-header">
@@ -331,7 +285,6 @@ Exp-AS: ড° ৰাজেন্দ্ৰ প্ৰসাদে ১৯৫০ চ
                             <div class="poster-subject">Reasoning <span class="subject-sep">/</span> ৰিজনিং</div>
                             <h1 class="poster-question">
                                 <span class="bilingual-line">Book is related to Reading in the same way as Food is related to?</span>
-                                <span class="bilingual-divider"></span>
                                 <span class="bilingual-line">কিতাপ পঢ়াৰ সৈতে পঢ়াৰ দৰে খাদ্যৰ সৈতে সম্পৰ্ক কি?</span>
                             </h1>
                             <div class="poster-options">
@@ -400,10 +353,8 @@ Exp-AS: ড° ৰাজেন্দ্ৰ প্ৰসাদে ১৯৫০ চ
 
 </div>
 
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-
 <script src="js/editor.js" defer></script>
 <script src="js/export.js" defer></script>
 <script src="js/script.js" defer></script>

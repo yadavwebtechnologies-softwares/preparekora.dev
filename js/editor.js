@@ -54,7 +54,7 @@
     }
 
 
-    /* ID system — PR/MM/NNNN, resets on new month */
+    /* ID system */
 
     function loadIdState() {
         const now = new Date().getMonth() + 1;
@@ -167,7 +167,7 @@
     }
 
 
-    /* HTML builders */
+    /* Builders */
 
     function buildHeaderHTML() {
         return `
@@ -199,10 +199,10 @@
         return `<div class="poster-subject">${parts.join(" ")}</div>`;
     }
 
+    /* ★ CHANGED — no divider between EN and AS question lines ★ */
     function buildQuestionHTML(en, as) {
         const parts = [];
         if (en) parts.push(`<span class="bilingual-line">${escapeHTML(en)}</span>`);
-        if (en && as) parts.push(`<span class="bilingual-divider"></span>`);
         if (as) parts.push(`<span class="bilingual-line">${escapeHTML(as)}</span>`);
         return parts.join("");
     }
@@ -244,7 +244,6 @@
             ? buildExplanationHTML(d.explanationEn, d.explanationAs)
             : "";
 
-        // "Comment your answer" CTA — shown in Variant 1 (no explanation)
         const ctaHTML = includeExplanation
             ? ""
             : `<div class="poster-cta">💬 Comment your answer</div>`;
@@ -588,7 +587,6 @@
             renderPoster();
         });
 
-        // Panel heading click → jump to MCQ module
         const panelHeading = $("panelHeading");
         if (panelHeading) {
             const switchToMcq = () => setModule("mcq");
@@ -611,7 +609,6 @@
         loadIdState();
         bindEvents();
         setModule("mcq");
-        // Ensure the explanation toggle is OFF by default (Variant 1)
         const explToggle = $("mcqIncludeExplanation");
         if (explToggle) explToggle.checked = false;
         renderPoster();

@@ -6,17 +6,14 @@
     let isExporting = false;
 
     function showOverlay() {
-        const o = $("exportOverlay");
-        const b = $("exportProgressBar");
-        const t = $("exportProgressText");
+        const o = $("exportOverlay"), b = $("exportProgressBar"), t = $("exportProgressText");
         if (o) o.hidden = false;
         if (b) b.style.width = "10%";
         if (t) t.textContent = "Rendering high-resolution image...";
     }
 
     function setProgress(pct, msg) {
-        const b = $("exportProgressBar");
-        const t = $("exportProgressText");
+        const b = $("exportProgressBar"), t = $("exportProgressText");
         if (b) b.style.width = pct + "%";
         if (t && msg) t.textContent = msg;
     }
@@ -33,9 +30,7 @@
     }
 
     function twoFrames() {
-        return new Promise(resolve => {
-            requestAnimationFrame(() => requestAnimationFrame(resolve));
-        });
+        return new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
     }
 
     async function renderPosterToDataURL() {
@@ -50,12 +45,8 @@
         }
 
         const canvas = await html2canvas(poster, {
-            scale: scale,
-            backgroundColor: "#ffffff",
-            useCORS: true,
-            logging: false,
-            windowWidth: poster.scrollWidth,
-            windowHeight: poster.scrollHeight
+            scale, backgroundColor: "#ffffff", useCORS: true, logging: false,
+            windowWidth: poster.scrollWidth, windowHeight: poster.scrollHeight
         });
 
         const mime = format === "webp" ? "image/webp" : "image/png";
@@ -69,8 +60,6 @@
     }
 
 
-    /* Single export */
-
     async function runExport() {
         if (isExporting) return;
         if (!window.html2canvas) { alert("Export library not loaded. Please refresh."); return; }
@@ -82,7 +71,6 @@
         try {
             const { dataURL, format } = await renderPosterToDataURL();
             setProgress(85, "Encoding image...");
-
             const link = document.createElement("a");
             link.href = dataURL;
             link.download = buildFilename(getIdState().current, format, "");
@@ -95,7 +83,7 @@
             if (est) est.textContent = "Image downloaded successfully.";
 
             if (window.PreparekoraEditor && window.PreparekoraEditor.incrementId) {
-                setTimeout(() => window.PreparekoraEditor.incrementId(), 400);
+                window.PreparekoraEditor.incrementId();
             }
         } catch (err) {
             console.error("Export failed:", err);
@@ -108,8 +96,6 @@
         }
     }
 
-
-    /* Dual export — FIXED: render both first, then synchronous downloads */
 
     async function runExportBoth() {
         if (isExporting) return;
@@ -125,35 +111,21 @@
         showOverlay();
 
         try {
-            /* ---------- Step 1: render WITHOUT explanation ---------- */
             setProgress(10, "Rendering normal MCQ...");
             editor.setExplanation(false);
             await twoFrames();
             await new Promise(r => setTimeout(r, 150));
             const r1 = await renderPosterToDataURL();
 
-            /* ---------- Step 2: render WITH explanation ---------- */
             setProgress(50, "Rendering MCQ with explanation...");
             editor.setExplanation(true);
             await twoFrames();
             await new Promise(r => setTimeout(r, 150));
             const r2 = await renderPosterToDataURL();
 
-            /* ---------- Step 3: restore UI state ---------- */
             editor.setExplanation(originalState);
             await twoFrames();
 
-            /* ---------- Safety: confirm images differ ---------- */
-            if (r1.dataURL === r2.dataURL) {
-                console.warn("Both renders produced identical dataURL — retrying with longer wait.");
-                editor.setExplanation(false);
-                await new Promise(r => setTimeout(r, 400));
-                const retry = await renderPosterToDataURL();
-                r1.dataURL = retry.dataURL;
-                editor.setExplanation(originalState);
-            }
-
-            /* ---------- Step 4: BOTH downloads synchronously ---------- */
             setProgress(92, "Downloading both variants...");
 
             const link1 = document.createElement("a");
@@ -165,21 +137,15 @@
 
             document.body.appendChild(link1);
             document.body.appendChild(link2);
-
-            // Synchronous clicks — preserves gesture context, allows 2 downloads
             link1.click();
             link2.click();
-
-            // Defer cleanup
             setTimeout(() => { link1.remove(); link2.remove(); }, 1000);
 
             setProgress(100, "Both downloaded.");
             const est = $("exportStatus");
             if (est) est.textContent = "Both variants downloaded (Normal + Explanation).";
 
-            if (editor.incrementId) {
-                setTimeout(() => editor.incrementId(), 700);
-            }
+            if (editor.incrementId) editor.incrementId();
         } catch (err) {
             console.error("Both-export failed:", err);
             const est = $("exportStatus");

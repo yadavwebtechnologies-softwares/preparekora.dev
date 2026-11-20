@@ -1,363 +1,614 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#ffffff">
-    <title>Preparekora MCQ Studio</title>
-    <meta name="description" content="Create and export professional Preparekora MCQ and Q&A images.">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css">
-</head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Q&A Studio — preparekora</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Assamese:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#fafafa;--surface:#fff;--primary:#1a1a1a;--secondary:#6b6b6b;
+  --muted:#999;--border:#e5e5e5;--border-soft:#eee;--accent:#a84b32;
+  --radius:8px;--sidebar-w:400px;--topbar-h:56px;
+  --font-ui:'Nunito',system-ui,-apple-system,sans-serif;
+  --font-en:'Nunito',sans-serif;--font-as:'Noto Sans Assamese','Nunito',sans-serif;
+}
+body{font-family:var(--font-ui);background:var(--bg);color:var(--primary);
+  font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit}
+button:disabled{opacity:.5;cursor:not-allowed}
+input,textarea{font-family:inherit;font-size:inherit;width:100%}
+[hidden]{display:none!important}
 
+/* Topbar */
+.topbar{display:flex;align-items:center;justify-content:space-between;
+  height:var(--topbar-h);padding:0 20px;background:var(--surface);
+  border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50}
+.brand{font-size:16px;font-weight:800;letter-spacing:-.4px;display:inline-flex;
+  align-items:center;gap:8px}
+.brand span{color:var(--muted);font-weight:500}
+.brand-tag{font-size:10px;text-transform:uppercase;letter-spacing:.8px;
+  font-weight:700;padding:3px 7px;background:#f0f0f0;border-radius:4px;
+  color:var(--secondary)}
+
+/* Workspace */
+.workspace{display:grid;grid-template-columns:var(--sidebar-w) minmax(0,1fr);
+  height:calc(100vh - var(--topbar-h));overflow:hidden}
+
+/* Sidebar */
+.sidebar{background:var(--surface);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;overflow:hidden}
+.sidebar-scroll{flex:1;overflow-y:auto;padding:20px;scrollbar-width:thin}
+.sidebar-scroll::-webkit-scrollbar{width:6px}
+.sidebar-scroll::-webkit-scrollbar-thumb{background:#d5d5d5;border-radius:10px}
+
+.field-group{margin-bottom:16px}
+.field-group:last-child{margin-bottom:0}
+.field-group label{display:block;margin-bottom:6px;font-size:12px;
+  font-weight:600;color:var(--secondary);text-transform:uppercase;
+  letter-spacing:.5px}
+.input{padding:9px 12px;font-size:14px;border:1px solid var(--border);
+  border-radius:var(--radius);background:#fff;color:var(--primary);
+  transition:border-color .15s ease,box-shadow .15s ease}
+.input:focus{outline:none;border-color:#999;box-shadow:0 0 0 3px rgba(0,0,0,.05)}
+textarea.input{min-height:220px;resize:vertical;
+  font-family:ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+  font-size:12.5px;line-height:1.65}
+.hint{margin-top:6px;font-size:11.5px;color:var(--muted);line-height:1.5}
+
+.ratio-group{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.ratio-btn{padding:8px 4px;font-size:12px;font-weight:600;
+  border:1px solid var(--border);border-radius:var(--radius);
+  background:#fff;color:var(--secondary);transition:all .15s ease}
+.ratio-btn:hover{color:var(--primary);border-color:#ccc}
+.ratio-btn.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+
+.status{padding:10px 12px;background:#f5f5f5;border-radius:var(--radius);
+  font-size:12px;color:var(--secondary);line-height:1.5;margin-top:16px}
+.status strong{color:var(--primary);font-weight:700}
+.status-warn{color:var(--accent);font-weight:600}
+
+.actions{padding:16px 20px;border-top:1px solid var(--border);
+  display:flex;flex-direction:column;gap:8px;background:var(--surface)}
+.btn{padding:11px 16px;font-size:14px;font-weight:700;border-radius:var(--radius);
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  transition:all .15s ease}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-primary:hover:not(:disabled){background:#333}
+.btn-full{width:100%}
+
+/* Preview */
+.preview-panel{display:flex;flex-direction:column;padding:20px;overflow:hidden}
+.preview-toolbar{display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:14px;gap:12px}
+.preview-toolbar h2{font-size:15px;font-weight:700}
+.pager{display:flex;align-items:center;gap:4px;padding:4px;background:#fff;
+  border:1px solid var(--border);border-radius:var(--radius)}
+.pager-btn{width:26px;height:26px;display:grid;place-items:center;
+  border-radius:5px;color:var(--secondary);font-size:16px;line-height:1;
+  font-weight:600}
+.pager-btn:hover:not(:disabled){background:#f0f0f0;color:var(--primary)}
+.pager-label{padding:0 8px;font-size:12px;font-weight:600;white-space:nowrap}
+
+.preview-stage{flex:1;min-height:0;display:flex;align-items:center;
+  justify-content:center;overflow:auto;padding:24px;
+  border-radius:var(--radius);background-color:#f0f0f0;
+  background-image:linear-gradient(45deg,#e8e8e8 25%,transparent 25%),
+    linear-gradient(-45deg,#e8e8e8 25%,transparent 25%),
+    linear-gradient(45deg,transparent 75%,#e8e8e8 75%),
+    linear-gradient(-45deg,transparent 75%,#e8e8e8 75%);
+  background-size:16px 16px;background-position:0 0,0 8px,8px -8px,-8px 0}
+.preview-stage::-webkit-scrollbar{width:6px;height:6px}
+.preview-stage::-webkit-scrollbar-thumb{background:#d5d5d5;border-radius:10px}
+
+/* Poster */
+.poster{--fs:1;width:540px;max-width:100%;aspect-ratio:var(--aspect-ratio,3/4);
+  padding:28px;display:flex;flex-direction:column;background:#fff;
+  border:1px solid #e5e5e5;border-radius:12px;
+  box-shadow:0 4px 20px rgba(0,0,0,.06);color:var(--primary);
+  font-family:var(--font-ui);flex-shrink:0}
+.poster-header{display:grid;grid-template-columns:1fr auto 1fr;
+  align-items:center;gap:12px;padding-bottom:12px;
+  border-bottom:1px solid #e5e5e5;flex-shrink:0}
+.ph-brand{font-size:15px;font-weight:800;letter-spacing:-.4px;
+  justify-self:start;white-space:nowrap}
+.ph-brand .ph-domain{color:var(--muted);font-weight:500}
+.ph-subject{justify-self:center;font-size:12px;font-weight:700;
+  color:var(--accent);text-transform:uppercase;letter-spacing:.5px;
+  text-align:center;overflow-wrap:anywhere;max-width:200px}
+.ph-id{justify-self:end;padding:4px 8px;font-size:9px;font-weight:700;
+  color:var(--secondary);border:1px solid #e5e5e5;border-radius:10px;
+  white-space:nowrap}
+
+.poster-body{flex:1;min-height:0;padding:14px 0;overflow:hidden}
+.poster-body-inner{width:100%;min-height:0}
+
+.qa-block{padding-bottom:calc(6px*var(--fs))}
+.qa-block+.qa-block{padding-top:calc(6px*var(--fs));border-top:1px solid #eee}
+.qa-row{display:flex;gap:6px;align-items:flex-start;
+  margin-bottom:calc(2px*var(--fs))}
+.qa-row:last-child{margin-bottom:0}
+.qa-label{flex-shrink:0;min-width:calc(28px*var(--fs));
+  font-size:calc(14px*var(--fs));font-weight:800;color:var(--accent);
+  line-height:1.4}
+.qa-label-a{color:var(--primary)}
+.qa-text{flex:1;min-width:0}
+.qa-en,.qa-as{text-align:justify;text-justify:inter-word;
+  overflow-wrap:anywhere;word-break:break-word;line-height:1.45}
+.qa-en{font-family:var(--font-en);font-size:calc(13.5px*var(--fs));
+  font-weight:500;color:var(--primary)}
+.qa-as{font-family:var(--font-as);font-size:calc(13px*var(--fs));
+  color:#444;margin-top:calc(1px*var(--fs))}
+
+.poster-footer{flex-shrink:0;padding-top:10px;border-top:1px solid #e5e5e5;
+  display:flex;align-items:center;justify-content:space-between;
+  font-size:calc(9px*var(--fs));color:var(--muted);font-weight:600}
+
+.empty-state{padding:40px 20px;text-align:center;color:var(--muted);
+  font-size:13px}
+
+/* Export overlay */
+.export-overlay{position:fixed;inset:0;z-index:1000;display:flex;
+  align-items:center;justify-content:center;padding:20px;
+  background:rgba(255,255,255,.94);backdrop-filter:blur(10px)}
+.export-loader{width:min(100%,300px);padding:26px;text-align:center;
+  background:#fff;border:1px solid var(--border);border-radius:12px;
+  box-shadow:0 8px 30px rgba(0,0,0,.08)}
+.loader-spinner{width:32px;height:32px;margin:0 auto 16px;
+  border:3px solid #eee;border-top-color:var(--primary);border-radius:50%;
+  animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.export-loader h3{font-size:15px;font-weight:700}
+.export-loader p{margin-top:6px;font-size:12.5px;color:var(--secondary)}
+.progress-track{height:4px;margin-top:16px;border-radius:4px;
+  background:#eee;overflow:hidden}
+.progress-bar{height:100%;width:0;background:var(--primary);
+  border-radius:4px;transition:width .2s ease}
+
+/* Responsive */
+@media (max-width:900px){:root{--sidebar-w:340px}}
+@media (max-width:720px){
+  .workspace{grid-template-columns:1fr;height:auto;overflow:visible}
+  .sidebar{border-right:0;border-bottom:1px solid var(--border)}
+  .sidebar-scroll{overflow:visible}
+  .preview-panel{min-height:600px;padding:16px 12px}
+  .preview-stage{padding:14px}
+  .topbar{padding:0 14px}
+}
+</style>
+</head>
 <body>
 
-<div class="app" id="app">
-
-    <!-- =========================================
-         TOPBAR — modern navbar
-    ========================================== -->
-    <header class="topbar">
-
-        <a href="#" class="app-brand" aria-label="Preparekora Studio">
-            <span class="brand-name">preparekora<span class="brand-domain">.in</span></span>
-            <span class="brand-tag">Studio</span>
-        </a>
-
-        <nav class="module-switcher" role="tablist" aria-label="Image module" id="moduleTabs">
-            <button class="module-tab active" role="tab" aria-selected="true" data-module="mcq" id="tabMcq" type="button">
-                MCQ Image
-            </button>
-            <button class="module-tab" role="tab" aria-selected="false" data-module="qa" id="tabQa" type="button">
-                Q&amp;A Image
-            </button>
-        </nav>
-
-        <div class="topbar-actions">
-            <span class="save-status" id="saveStatus">Ready</span>
-        </div>
-
-    </header>
-
-
-    <!-- =========================================
-         WORKSPACE
-    ========================================== -->
-    <main class="workspace">
-
-        <!-- =========================================
-             SIDEBAR
-        ========================================== -->
-        <aside class="editor-panel" id="editorPanel">
-
-            <div class="panel-scroll">
-
-                <div class="panel-heading" id="panelHeading" role="button" tabindex="0">
-                    <h1 id="panelHeadingTitle">Create MCQ image</h1>
-                    <p id="panelHeadingDesc">Follow the steps to create your question image.</p>
-                </div>
-
-                <div class="editor-section active" id="contentSection">
-
-                    <!-- ========== GROUP: Content ========== -->
-                    <section class="form-group">
-                        <h2 class="group-title">Content</h2>
-
-                        <div class="field-group" id="mcqFieldGroup">
-                            <label for="mcqContent">MCQ format (EN + AS)</label>
-                            <textarea id="mcqContent" rows="12" spellcheck="false">Subject-EN: Reasoning
-Subject-AS: ৰিজনিং
-Q-EN: Book is related to Reading in the same way as Food is related to?
-Q-AS: কিতাপ পঢ়াৰ সৈতে পঢ়াৰ দৰে খাদ্যৰ সৈতে সম্পৰ্ক কি?
-A-EN: Cooking
-A-AS: ৰন্ধা
-B-EN: Eating
-B-AS: খোৱা
-C-EN: Kitchen
-C-AS: ৰান্ধনীঘৰ
-D-EN: Buying
-D-AS: কিনা
-Ans: B
-Exp-EN: Food is consumed by eating, just as a book is consumed by reading.
-Exp-AS: খাদ্য খোৱাৰ দ্বাৰা গ্ৰহণ কৰা হয়, যেনেকৈ কিতাপ পঢ়াৰ দ্বাৰা গ্ৰহণ কৰা হয়।</textarea>
-                            <p class="field-help">Labels: Subject-EN, Subject-AS, Q-EN, Q-AS, A-EN, A-AS, B-EN, B-AS, C-EN, C-AS, D-EN, D-AS, Ans, Exp-EN, Exp-AS.</p>
-                        </div>
-
-                        <div class="field-group" id="qaFieldGroup" hidden>
-                            <label for="qaContent">Q&amp;A format (EN + AS)</label>
-                            <textarea id="qaContent" rows="12" spellcheck="false">Subject-EN: History
-Subject-AS: ইতিহাস
-Q-EN: Who was the first President of India?
-Q-AS: ভাৰতৰ প্ৰথম ৰাষ্ট্ৰপতি কোন আছিল?
-Exp-EN: Dr. Rajendra Prasad served as the first President of India from 1950 to 1962.
-Exp-AS: ড° ৰাজেন্দ্ৰ প্ৰসাদে ১৯৫০ চনৰ পৰা ১৯৬২ চনলৈকে ভাৰতৰ প্ৰথম ৰাষ্ট্ৰপতি হিচাপে কাৰ্যনিৰ্বাহ কৰিছিল।</textarea>
-                            <p class="field-help">Labels: Subject-EN, Subject-AS, Q-EN, Q-AS, Exp-EN, Exp-AS.</p>
-                        </div>
-
-                        <div class="toggle-row" id="mcqOutputToggleGroup">
-                            <div class="toggle-desc">
-                                <strong>Include explanation</strong>
-                                <p>Off = plain MCQ. On = MCQ with explanation.</p>
-                            </div>
-                            <label class="toggle-switch" for="mcqIncludeExplanation">
-                                <input type="checkbox" id="mcqIncludeExplanation">
-                                <span class="toggle-slider"></span>
-                            </label>
-                        </div>
-                    </section>
-
-                    <!-- ========== GROUP: Image Settings ========== -->
-                    <section class="form-group">
-                        <h2 class="group-title">Image settings</h2>
-
-                        <div class="field-group">
-                            <label for="aspectRatio">Aspect ratio</label>
-                            <select id="aspectRatio">
-                                <option value="1:1">1:1 — Square</option>
-                                <option value="16:9">16:9 — Landscape</option>
-                                <option value="9:16">9:16 — Portrait</option>
-                                <option value="4:3" selected>4:3 — Landscape</option>
-                                <option value="3:4">3:4 — Portrait</option>
-                                <option value="custom">Custom size</option>
-                            </select>
-                        </div>
-
-                        <div class="custom-size-fields" id="customSizeFields" hidden>
-                            <div class="field-group">
-                                <label for="customWidth">Width (px)</label>
-                                <input type="number" id="customWidth" value="1080" min="100" max="12000">
-                            </div>
-                            <div class="field-group">
-                                <label for="customHeight">Height (px)</label>
-                                <input type="number" id="customHeight" value="1350" min="100" max="12000">
-                            </div>
-                        </div>
-
-                        <div class="info-block">
-                            <div class="info-row">
-                                <span>Dimensions</span>
-                                <strong id="canvasDimensions">1080 × 1350 px</strong>
-                            </div>
-                            <div class="info-row">
-                                <span>Ratio</span>
-                                <span id="canvasRatioLabel">4:3</span>
-                            </div>
-                        </div>
-
-                        <div class="field-group">
-                            <label for="qrUrl">QR destination URL</label>
-                            <input type="url" id="qrUrl" value="" placeholder="https://your-test-link.com">
-                            <p class="field-help">URL that opens when someone scans the QR code.</p>
-                        </div>
-                    </section>
-
-                    <!-- ========== GROUP: Export ========== -->
-                    <section class="form-group">
-                        <h2 class="group-title">Export</h2>
-
-                        <div class="field-group">
-                            <label for="exportResolution">Output resolution</label>
-                            <select id="exportResolution" disabled>
-                                <option value="2">Standard — 2×</option>
-                                <option value="4" selected>4K — High resolution</option>
-                                <option value="8">8K — Maximum resolution</option>
-                            </select>
-                        </div>
-
-                        <div class="info-block">
-                            <div class="info-row">
-                                <span>Output size</span>
-                                <strong id="exportDimensions">4320 × 5400 px</strong>
-                            </div>
-                            <div class="info-row">
-                                <span>Format</span>
-                                <span id="exportFormatLabel">PNG</span>
-                            </div>
-                        </div>
-
-                        <details class="advanced-settings">
-                            <summary>Advanced settings</summary>
-
-                            <div class="field-group">
-                                <label for="exportFormat">Image format</label>
-                                <select id="exportFormat">
-                                    <option value="png" selected>PNG — Lossless</option>
-                                    <option value="webp">WebP — Smaller file</option>
-                                </select>
-                            </div>
-
-                            <div class="field-group" id="qualityField" hidden>
-                                <label for="exportQuality">WebP quality: <span id="qualityValue">90%</span></label>
-                                <input type="range" id="exportQuality" min="50" max="100" value="90">
-                            </div>
-
-                            <div class="settings-information">
-                                <strong>Automatic image ID</strong>
-                                <p>Restarts at 0001 each new month.</p>
-                                <div class="id-format-example">
-                                    <span>PR</span><span>/</span>
-                                    <span id="currentIdMonth">11</span><span>/</span>
-                                    <span id="currentIdSeq">0001</span>
-                                </div>
-                            </div>
-
-                            <div class="toggle-row">
-                                <div class="toggle-desc">
-                                    <strong>Allow manual ID editing</strong>
-                                    <p>Emergency corrections only.</p>
-                                </div>
-                                <label class="toggle-switch" for="manualIdToggle">
-                                    <input type="checkbox" id="manualIdToggle">
-                                    <span class="toggle-slider"></span>
-                                </label>
-                            </div>
-
-                            <div class="manual-id-status" id="manualIdStatus">
-                                Manual editing is disabled. Image ID is automatically managed.
-                            </div>
-                        </details>
-                    </section>
-
-                </div>
-
-                <!-- Hidden compat fields -->
-                <div hidden aria-hidden="true">
-                    <input type="text" id="brandName" value="preparekora" maxlength="30">
-                    <input type="text" id="brandDomain" value=".in" maxlength="15">
-                    <input type="text" id="mcqId" value="PR/11/0001" maxlength="40" readonly>
-                    <input type="text" id="subjectName" value="Reasoning" maxlength="60">
-                    <textarea id="questionText" rows="4">Book is related to Reading in the same way as Food is related to?</textarea>
-                    <input type="text" id="optionA" value="Cooking">
-                    <input type="text" id="optionB" value="Eating">
-                    <input type="text" id="optionC" value="Kitchen">
-                    <input type="text" id="optionD" value="Buying">
-                    <input type="text" id="commentsTitle" value="Comments" maxlength="50">
-                    <input type="text" id="commentsText" value="The correct option" maxlength="100">
-                    <input type="color" id="canvasBackground" value="#ffffff">
-                    <span id="canvasBackgroundValue">#FFFFFF</span>
-                    <span id="previewFormat"></span>
-                </div>
-
-            </div>
-
-            <!-- ========== STICKY ACTION BAR ========== -->
-            <div class="action-bar">
-                <button class="button button-secondary button-full" id="previewButton" type="button">
-                    Preview image
-                </button>
-                <button class="button button-primary button-full" id="exportButton" type="button" disabled>
-                    Download image
-                </button>
-                <button class="button button-ghost button-full" id="exportBothButton" type="button" disabled hidden>
-                    Download both variants
-                </button>
-                <p class="action-status" id="previewStatus" aria-live="polite">Paste your format and select a ratio to continue.</p>
-            </div>
-
-        </aside>
-
-
-        <!-- =========================================
-             PREVIEW PANEL
-        ========================================== -->
-        <section class="preview-panel" id="previewPanel">
-
-            <div class="preview-toolbar">
-                <div>
-                    <h2>Live preview</h2>
-                    <p>Your final image preview.</p>
-                </div>
-                <div class="preview-size" id="previewSize">1080 × 1350</div>
-            </div>
-
-            <div class="preview-stage" id="previewStage">
-                <main class="poster poster-bilingual" id="poster">
-                    <header class="poster-header">
-                        <div class="poster-brand">
-                            <span class="poster-brand-name">preparekora</span><span class="poster-brand-domain">.in</span>
-                        </div>
-                        <div class="poster-id">PR/11/0001</div>
-                    </header>
-                    <section class="poster-content">
-                        <div class="poster-question-area">
-                            <div class="poster-subject">Reasoning <span class="subject-sep">/</span> ৰিজনিং</div>
-                            <h1 class="poster-question">
-                                <span class="bilingual-line">Book is related to Reading in the same way as Food is related to?</span>
-                                <span class="bilingual-line">কিতাপ পঢ়াৰ সৈতে পঢ়াৰ দৰে খাদ্যৰ সৈতে সম্পৰ্ক কি?</span>
-                            </h1>
-                            <div class="poster-options">
-                                <div class="poster-option">
-                                    <div class="poster-option-head">
-                                        <span class="poster-option-letter">A</span>
-                                        <span class="poster-option-text">Cooking</span>
-                                    </div>
-                                    <span class="poster-option-text opt-as">ৰন্ধা</span>
-                                </div>
-                                <div class="poster-option">
-                                    <div class="poster-option-head">
-                                        <span class="poster-option-letter">B</span>
-                                        <span class="poster-option-text">Eating</span>
-                                    </div>
-                                    <span class="poster-option-text opt-as">খোৱা</span>
-                                </div>
-                                <div class="poster-option">
-                                    <div class="poster-option-head">
-                                        <span class="poster-option-letter">C</span>
-                                        <span class="poster-option-text">Kitchen</span>
-                                    </div>
-                                    <span class="poster-option-text opt-as">ৰান্ধনীঘৰ</span>
-                                </div>
-                                <div class="poster-option">
-                                    <div class="poster-option-head">
-                                        <span class="poster-option-letter">D</span>
-                                        <span class="poster-option-text">Buying</span>
-                                    </div>
-                                    <span class="poster-option-text opt-as">কিনা</span>
-                                </div>
-                            </div>
-                            <div class="poster-comments">
-                                <span class="poster-comments-title">Answer:</span>
-                                <span class="poster-comments-text">B) Eating / খোৱা</span>
-                            </div>
-                            <div class="poster-cta">💬 Comment your answer</div>
-                        </div>
-                    </section>
-                    <footer class="poster-footer">
-                        <div class="poster-qr-container"><div id="previewQrCode"></div></div>
-                    </footer>
-                </main>
-            </div>
-
-            <div class="preview-footer">
-                <span>preparekora.in</span>
-                <span id="previewAspectLabel">4:3</span>
-            </div>
-
-        </section>
-
-    </main>
-
-
-    <div class="export-overlay" id="exportOverlay" hidden>
-        <div class="export-loader">
-            <div class="loader-spinner"></div>
-            <h3>Preparing your image</h3>
-            <p id="exportProgressText">Rendering high-resolution image...</p>
-            <div class="progress-track">
-                <div class="progress-bar" id="exportProgressBar"></div>
-            </div>
-        </div>
-    </div>
-
+<div class="topbar">
+  <div class="brand">preparekora<span>.in</span><span class="brand-tag">Q&amp;A</span></div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<main class="workspace">
+
+  <aside class="sidebar">
+    <div class="sidebar-scroll">
+
+      <div class="field-group">
+        <label for="subject">Subject</label>
+        <input id="subject" class="input" type="text" value="History" placeholder="e.g. History, Geography">
+      </div>
+
+      <div class="field-group">
+        <label for="input">Q&amp;A input</label>
+        <textarea id="input" class="input" spellcheck="false">Q: Who was the first President of India? (ভাৰতৰ প্ৰথম ৰাষ্ট্ৰপতি কোন আছিল?)
+Ans: Dr. Rajendra Prasad (ড° ৰাজেন্দ্ৰ প্ৰসাদ)
+
+Q: In which year did India gain independence? (ভাৰতে কোন বছৰত স্বাধীনতা লাভ কৰিছিল?)
+Ans: 1947 (১৯৪৭)
+
+Q: Who is known as the Father of the Nation? (ৰাষ্ট্ৰপিতা বুলি কোনজনক জনা যায়?)
+Ans: Mahatma Gandhi (মহাত্মা গান্ধী)
+
+Q: What is the capital of Assam? (অসমৰ ৰাজধানী কি?)
+Ans: Dispur (দিছপুৰ)
+
+Q: Who wrote the Indian National Anthem? (ভাৰতৰ ৰাষ্ট্ৰীয় সংগীত কোনে লিখিছিল?)
+Ans: Rabindranath Tagore (ৰবীন্দ্ৰনাথ ঠাকুৰ)
+
+Q: What is the largest river island in the world? (বিশ্বৰ আটাইতকৈ ডাঙৰ নদী দ্বীপ কোনটো?)
+Ans: Majuli (মাজুলী)
+
+Q: Who was the first Prime Minister of India? (ভাৰতৰ প্ৰথম প্ৰধানমন্ত্ৰী কোন আছিল?)
+Ans: Jawaharlal Nehru (জৱাহৰলাল নেহৰু)
+
+Q: What is the national animal of India? (ভাৰতৰ ৰাষ্ট্ৰীয় পশু কি?)
+Ans: Tiger (বাঘ)
+
+Q: In which state is Kaziranga National Park? (কাজিৰঙা ৰাষ্ট্ৰীয় উদ্যান কোনখন ৰাজ্যত?)
+Ans: Assam (অসম)
+
+Q: Who founded the Ahom kingdom? (আহোম ৰাজ্য কোনে প্ৰতিষ্ঠা কৰিছিল?)
+Ans: Sukapha (চুকাফা)</textarea>
+        <p class="hint">Format per block:<br><code>Q: English (Assamese)</code><br><code>Ans: English (Assamese)</code></p>
+      </div>
+
+      <div class="field-group">
+        <label>Aspect ratio</label>
+        <div class="ratio-group">
+          <button class="ratio-btn" data-ratio="1:1">1:1</button>
+          <button class="ratio-btn active" data-ratio="3:4">3:4</button>
+          <button class="ratio-btn" data-ratio="9:16">9:16</button>
+        </div>
+      </div>
+
+      <div class="status" id="status">—</div>
+
+    </div>
+
+    <div class="actions">
+      <button class="btn btn-primary btn-full" id="downloadAll" type="button">
+        Download all pages
+      </button>
+    </div>
+  </aside>
+
+  <section class="preview-panel">
+    <div class="preview-toolbar">
+      <h2>Preview</h2>
+      <div class="pager" id="pager" hidden>
+        <button class="pager-btn" id="pagerPrev" type="button">‹</button>
+        <span class="pager-label" id="pagerLabel">1 / 1</span>
+        <button class="pager-btn" id="pagerNext" type="button">›</button>
+      </div>
+    </div>
+    <div class="preview-stage">
+      <div class="poster" id="poster"></div>
+    </div>
+  </section>
+
+</main>
+
+<div class="export-overlay" id="exportOverlay" hidden>
+  <div class="export-loader">
+    <div class="loader-spinner"></div>
+    <h3>Preparing images</h3>
+    <p id="exportProgressText">Rendering...</p>
+    <div class="progress-track"><div class="progress-bar" id="exportProgressBar"></div></div>
+  </div>
+</div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script src="js/editor.js" defer></script>
-<script src="js/export.js" defer></script>
-<script src="js/script.js" defer></script>
+<script>
+(() => {
+  "use strict";
+  const $ = id => document.getElementById(id);
+  const ID_KEY = "pk_qa_id";
+  const ID_MONTH_KEY = "pk_qa_month";
+  const PER_PAGE = 10;
+
+  const state = {
+    ratio: "3:4",
+    currentPage: 0,
+    items: [],
+    pages: [],
+    id: { month: new Date().getMonth() + 1, base: 18 }
+  };
+  let isExporting = false;
+
+  /* ---------- ID system ---------- */
+  function initId() {
+    const now = new Date().getMonth() + 1;
+    let m = parseInt(localStorage.getItem(ID_MONTH_KEY) || "0", 10);
+    let n = parseInt(localStorage.getItem(ID_KEY) || "0", 10);
+    if (m !== now || !n || n < 18) {
+      m = now;
+      n = 18;
+      localStorage.setItem(ID_MONTH_KEY, String(now));
+      localStorage.setItem(ID_KEY, "18");
+    }
+    state.id = { month: m, base: n };
+  }
+  function saveIdBase(base) {
+    state.id.base = base;
+    localStorage.setItem(ID_KEY, String(base));
+  }
+  function getIdForPage(pageIndex) {
+    const n = state.id.base + pageIndex;
+    return "PR/" + String(state.id.month).padStart(2, "0") + "/" + String(n).padStart(4, "0");
+  }
+
+  /* ---------- Parser ---------- */
+  function splitBilingual(text) {
+    const t = (text || "").trim();
+    if (!t) return { en: "", as: "" };
+    const m = t.match(/^(.*?)\s*\(([^()]+)\)\s*$/);
+    if (m && m[1].trim()) return { en: m[1].trim(), as: m[2].trim() };
+    const onlyP = t.match(/^\(([^()]+)\)$/);
+    if (onlyP) return { en: "", as: onlyP[1].trim() };
+    return { en: t, as: "" };
+  }
+  function parseQA(text) {
+    const items = [];
+    let cur = null;
+    for (const raw of text.split(/\r?\n/)) {
+      const line = raw.trim();
+      if (!line) continue;
+      const q = line.match(/^Q\s*[:：]\s*(.*)$/i);
+      if (q) {
+        if (cur && cur.ansEn !== undefined) items.push(cur);
+        const p = splitBilingual(q[1]);
+        cur = { qEn: p.en, qAs: p.as, ansEn: undefined, ansAs: undefined };
+        continue;
+      }
+      const a = line.match(/^Ans(?:wer)?\s*[:：]\s*(.*)$/i);
+      if (a && cur) {
+        const p = splitBilingual(a[1]);
+        cur.ansEn = p.en;
+        cur.ansAs = p.as;
+        items.push(cur);
+        cur = null;
+      }
+    }
+    if (cur && cur.ansEn !== undefined) items.push(cur);
+    return items;
+  }
+  function paginate(items, perPage) {
+    const pages = [];
+    for (let i = 0; i < items.length; i += perPage) {
+      pages.push(items.slice(i, i + perPage));
+    }
+    return pages;
+  }
+  function escapeHTML(s) {
+    return String(s ?? "")
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  }
+
+  /* ---------- Render ---------- */
+  function buildPageHTML(items, pageIndex, totalPages) {
+    const subject = $("subject").value.trim();
+    const id = getIdForPage(pageIndex);
+    const blocks = items.map(item => {
+      const q = [item.qEn ? `<div class="qa-en">${escapeHTML(item.qEn)}</div>` : "",
+                 item.qAs ? `<div class="qa-as">${escapeHTML(item.qAs)}</div>` : ""].join("");
+      const a = [item.ansEn ? `<div class="qa-en">${escapeHTML(item.ansEn)}</div>` : "",
+                 item.ansAs ? `<div class="qa-as">${escapeHTML(item.ansAs)}</div>` : ""].join("");
+      return `<div class="qa-block">
+        <div class="qa-row"><span class="qa-label">Q</span><div class="qa-text">${q || '<div class="qa-en">—</div>'}</div></div>
+        <div class="qa-row"><span class="qa-label qa-label-a">Ans</span><div class="qa-text">${a || '<div class="qa-en">—</div>'}</div></div>
+      </div>`;
+    }).join("");
+
+    return `
+      <header class="poster-header">
+        <div class="ph-brand">preparekora<span class="ph-domain">.in</span></div>
+        <div class="ph-subject">${escapeHTML(subject)}</div>
+        <div class="ph-id">${escapeHTML(id)}</div>
+      </header>
+      <section class="poster-body"><div class="poster-body-inner">${blocks}</div></section>
+      <footer class="poster-footer">
+        <span>preparekora.in</span>
+        <span>${pageIndex + 1} / ${totalPages}</span>
+      </footer>`;
+  }
+
+  function applyRatio(ratio) {
+    state.ratio = ratio;
+    const [wr, hr] = ratio.split(":").map(Number);
+    $("poster").style.setProperty("--aspect-ratio", `${wr} / ${hr}`);
+    document.querySelectorAll(".ratio-btn").forEach(b => {
+      b.classList.toggle("active", b.dataset.ratio === ratio);
+    });
+  }
+
+  function fitPoster(target) {
+    const poster = target || $("poster");
+    const body = poster.querySelector(".poster-body");
+    const inner = poster.querySelector(".poster-body-inner");
+    if (!body || !inner) return 1;
+    poster.style.setProperty("--fs", "1");
+    void inner.offsetHeight;
+    const availH = body.clientHeight;
+    let usedH = inner.offsetHeight;
+    let fs = 1;
+    const minFs = 0.38, maxFs = 1.5, step = 0.02;
+    let safety = 0;
+    while (usedH > availH && fs > minFs && safety < 80) {
+      fs -= step;
+      poster.style.setProperty("--fs", fs.toFixed(3));
+      void inner.offsetHeight;
+      usedH = inner.offsetHeight;
+      safety++;
+    }
+    if (usedH < availH * 0.6) {
+      let grow = 0;
+      while (usedH < availH * 0.85 && fs < maxFs && grow < 40) {
+        fs += step;
+        poster.style.setProperty("--fs", fs.toFixed(3));
+        void inner.offsetHeight;
+        usedH = inner.offsetHeight;
+        grow++;
+      }
+    }
+    return fs;
+  }
+
+  function updateStatus(fitScale) {
+    const total = state.items.length;
+    const pages = Math.max(state.pages.length, 1);
+    const el = $("status");
+    if (!total) {
+      el.textContent = "No Q&A detected — paste in the textarea above.";
+      return;
+    }
+    let html = `<strong>${total}</strong> question${total > 1 ? "s" : ""} · <strong>${pages}</strong> page${pages > 1 ? "s" : ""} · 10 per page`;
+    if (fitScale && fitScale < 0.65) {
+      html += ` · <span class="status-warn">text getting small — try 9:16</span>`;
+    }
+    el.innerHTML = html;
+  }
+
+  function updatePager(totalPages) {
+    const pager = $("pager");
+    if (totalPages <= 1) { pager.hidden = true; return; }
+    pager.hidden = false;
+    $("pagerLabel").textContent = `${state.currentPage + 1} / ${totalPages}`;
+    $("pagerPrev").disabled = state.currentPage === 0;
+    $("pagerNext").disabled = state.currentPage === totalPages - 1;
+  }
+
+  function renderPreview() {
+    state.items = parseQA($("input").value);
+    state.pages = paginate(state.items, PER_PAGE);
+    const totalPages = Math.max(state.pages.length, 1);
+    if (state.currentPage >= totalPages) state.currentPage = totalPages - 1;
+
+    const poster = $("poster");
+    if (!state.items.length) {
+      poster.innerHTML = `
+        <header class="poster-header">
+          <div class="ph-brand">preparekora<span class="ph-domain">.in</span></div>
+          <div class="ph-subject">${escapeHTML($("subject").value.trim()) || "Subject"}</div>
+          <div class="ph-id">${escapeHTML(getIdForPage(0))}</div>
+        </header>
+        <section class="poster-body"><div class="empty-state">Paste Q&amp;A to see preview</div></section>
+        <footer class="poster-footer"><span>preparekora.in</span><span>1 / 1</span></footer>`;
+    } else {
+      poster.innerHTML = buildPageHTML(state.pages[state.currentPage], state.currentPage, totalPages);
+    }
+
+    const fs = fitPoster();
+    updateStatus(fs);
+    updatePager(totalPages);
+  }
+
+  /* ---------- Export ---------- */
+  function fontsReady() {
+    return new Promise(async resolve => {
+      try {
+        await Promise.all([
+          document.fonts.load('700 16px Nunito'),
+          document.fonts.load('500 16px Nunito'),
+          document.fonts.load('400 16px Nunito'),
+          document.fonts.load('700 16px "Noto Sans Assamese"'),
+          document.fonts.load('400 16px "Noto Sans Assamese"')
+        ]);
+        await document.fonts.ready;
+      } catch (_) {}
+      resolve();
+    });
+  }
+  function waitFrame() {
+    return new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+  }
+  function showOverlay(t) {
+    $("exportOverlay").hidden = false;
+    $("exportProgressText").textContent = t || "Rendering...";
+    $("exportProgressBar").style.width = "5%";
+  }
+  function setProgress(p, t) {
+    $("exportProgressBar").style.width = p + "%";
+    if (t) $("exportProgressText").textContent = t;
+  }
+  function hideOverlay() { $("exportOverlay").hidden = true; }
+  function downloadDataURL(url, name) {
+    const a = document.createElement("a");
+    a.href = url; a.download = name;
+    document.body.appendChild(a); a.click(); a.remove();
+  }
+
+  async function downloadAll() {
+    if (isExporting) return;
+    const items = parseQA($("input").value);
+    if (!items.length) { alert("Please paste at least one Q&A pair."); return; }
+
+    isExporting = true;
+    $("downloadAll").disabled = true;
+
+    const pages = paginate(items, PER_PAGE);
+    const totalPages = pages.length;
+    const [wr, hr] = state.ratio.split(":").map(Number);
+    const posterH = Math.round(540 * hr / wr);
+
+    const off = document.createElement("div");
+    off.className = "poster";
+    off.style.cssText = `position:absolute;left:-99999px;top:0;
+      width:540px;height:${posterH}px;pointer-events:none`;
+    document.body.appendChild(off);
+
+    showOverlay("Loading fonts...");
+    await fontsReady();
+
+    try {
+      for (let i = 0; i < totalPages; i++) {
+        const id = getIdForPage(i);
+        setProgress(Math.round((i / totalPages) * 90) + 5, `Rendering page ${i + 1} / ${totalPages}...`);
+        off.innerHTML = buildPageHTML(pages[i], i, totalPages);
+        fitPoster(off);
+        await waitFrame();
+        await new Promise(r => setTimeout(r, 100));
+        const canvas = await html2canvas(off, {
+          scale: 2, backgroundColor: "#ffffff",
+          useCORS: true, logging: false
+        });
+        downloadDataURL(canvas.toDataURL("image/png"),
+          "preparekora-" + id.replace(/\//g, "-") + ".png");
+        await new Promise(r => setTimeout(r, 220));
+      }
+      saveIdBase(state.id.base + totalPages);
+      setProgress(100, "Done.");
+      setTimeout(hideOverlay, 500);
+    } catch (err) {
+      console.error(err);
+      alert("Download failed. Please try again.");
+      hideOverlay();
+    } finally {
+      off.remove();
+      $("downloadAll").disabled = false;
+      isExporting = false;
+      state.currentPage = 0;
+      renderPreview();
+    }
+  }
+
+  /* ---------- Events ---------- */
+  function bind() {
+    $("input").addEventListener("input", renderPreview);
+    $("subject").addEventListener("input", renderPreview);
+
+    document.querySelectorAll(".ratio-btn").forEach(b => {
+      b.addEventListener("click", () => {
+        applyRatio(b.dataset.ratio);
+        renderPreview();
+      });
+    });
+
+    $("pagerPrev").addEventListener("click", () => {
+      if (state.currentPage > 0) { state.currentPage--; renderPreview(); }
+    });
+    $("pagerNext").addEventListener("click", () => {
+      if (state.currentPage < state.pages.length - 1) { state.currentPage++; renderPreview(); }
+    });
+
+    $("downloadAll").addEventListener("click", downloadAll);
+    window.addEventListener("resize", () => fitPoster());
+  }
+
+  function init() {
+    initId();
+    applyRatio(state.ratio);
+    bind();
+    renderPreview();
+    console.log("Q&A Studio ready. Starting ID:", getIdForPage(0));
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init, { once: true });
+  } else {
+    init();
+  }
+})();
+</script>
 
 </body>
 </html>

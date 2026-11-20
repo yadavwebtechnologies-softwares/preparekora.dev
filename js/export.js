@@ -79,16 +79,16 @@
             link.remove();
 
             setProgress(100, "Done.");
-            const est = $("exportStatus");
-            if (est) est.textContent = "Image downloaded successfully.";
+            const st = $("previewStatus");
+            if (st) st.textContent = "Image downloaded successfully.";
 
             if (window.PreparekoraEditor && window.PreparekoraEditor.incrementId) {
                 window.PreparekoraEditor.incrementId();
             }
         } catch (err) {
             console.error("Export failed:", err);
-            const est = $("exportStatus");
-            if (est) est.textContent = "Export failed. Please try again.";
+            const st = $("previewStatus");
+            if (st) st.textContent = "Export failed. Please try again.";
             alert("Export failed. Please try again.");
         } finally {
             setTimeout(hideOverlay, 500);
@@ -142,14 +142,14 @@
             setTimeout(() => { link1.remove(); link2.remove(); }, 1000);
 
             setProgress(100, "Both downloaded.");
-            const est = $("exportStatus");
-            if (est) est.textContent = "Both variants downloaded (Normal + Explanation).";
+            const st = $("previewStatus");
+            if (st) st.textContent = "Both variants downloaded.";
 
             if (editor.incrementId) editor.incrementId();
         } catch (err) {
             console.error("Both-export failed:", err);
-            const est = $("exportStatus");
-            if (est) est.textContent = "Export failed. Please try again.";
+            const st = $("previewStatus");
+            if (st) st.textContent = "Export failed. Please try again.";
             alert("Export failed. Please try again.");
         } finally {
             editor.setExplanation(originalState);

@@ -47,9 +47,7 @@
             </div>
 
 
-            <!-- =========================================
-                 NEW: MODULE TABS
-            ========================================= -->
+            <!-- MODULE TABS -->
 
             <div class="module-tabs" role="tablist" aria-label="Image module">
                 <button class="module-tab active" role="tab" aria-selected="true" data-module="mcq" id="tabMcq" type="button">MCQ Image</button>
@@ -132,17 +130,17 @@ Exp-AS: খাদ্য খোৱাৰ দ্বাৰা গ্ৰহণ ক�
 Subject-AS: ইতিহাস
 Q-EN: Who was the first President of India?
 Q-AS: ভাৰতৰ প্ৰথম ৰাষ্ট্ৰপতি কোন আছিল?
-Ans-EN: Dr. Rajendra Prasad
-Ans-AS: ড° ৰাজেন্দ্ৰ প্ৰসাদ"
+Exp-EN: Dr. Rajendra Prasad served as the first President of India from 1950 to 1962.
+Exp-AS: ড° ৰাজেন্দ্ৰ প্ৰসাদে ১৯৫০ চনৰ পৰা ১৯৬২ চনলৈকে ভাৰতৰ প্ৰথম ৰাষ্ট্ৰপতি হিচাপে কাৰ্যনিৰ্বাহ কৰিছিল।"
                     >Subject-EN: History
 Subject-AS: ইতিহাস
 Q-EN: Who was the first President of India?
 Q-AS: ভাৰতৰ প্ৰথম ৰাষ্ট্ৰপতি কোন আছিল?
-Ans-EN: Dr. Rajendra Prasad
-Ans-AS: ড° ৰাজেন্দ্ৰ প্ৰসাদ</textarea>
+Exp-EN: Dr. Rajendra Prasad served as the first President of India from 1950 to 1962.
+Exp-AS: ড° ৰাজেন্দ্ৰ প্ৰসাদে ১৯৫০ চনৰ পৰা ১৯৬২ চনলৈকে ভাৰতৰ প্ৰথম ৰাষ্ট্ৰপতি হিচাপে কাৰ্যনিৰ্বাহ কৰিছিল।</textarea>
 
                     <p class="field-help">
-                        Labels: Subject-EN, Subject-AS, Q-EN, Q-AS, Ans-EN, Ans-AS.
+                        Labels: Subject-EN, Subject-AS, Q-EN, Q-AS, Exp-EN, Exp-AS. (Ans-EN / Ans-AS also accepted as aliases.)
                     </p>
 
                 </div>
@@ -200,9 +198,24 @@ Ans-AS: ড° ৰাজেন্দ্ৰ প্ৰসাদ</textarea>
                 </div>
 
 
-                <!-- STEP 3 -->
+                <!-- STEP 3 : Preview + output type toggle -->
 
                 <div class="workflow-action">
+
+                    <!-- NEW: MCQ output toggle (only shown in MCQ module) -->
+                    <div class="field-group" id="mcqOutputToggleGroup">
+                        <div class="setting-row">
+                            <div class="setting-description">
+                                <strong>Include explanation</strong>
+                                <p>Off = plain MCQ image. On = MCQ with explanation.</p>
+                            </div>
+                            <label class="toggle-switch" for="mcqIncludeExplanation">
+                                <input type="checkbox" id="mcqIncludeExplanation" checked aria-label="Include explanation in MCQ image">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+
                     <button class="button button-primary button-full" id="previewButton" type="button">
                         Preview image
                     </button>
@@ -261,6 +274,11 @@ Ans-AS: ড° ৰাজেন্দ্ৰ প্ৰসাদ</textarea>
 
                 <button class="button button-primary button-full" id="exportButton" type="button" disabled>
                     Download image
+                </button>
+
+                <!-- NEW: Download both variants (MCQ only) -->
+                <button class="button button-secondary button-full" id="exportBothButton" type="button" disabled hidden>
+                    Download both variants (Normal + Explanation)
                 </button>
 
                 <p class="export-note" id="exportStatus" aria-live="polite">

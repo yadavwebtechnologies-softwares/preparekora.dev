@@ -54,7 +54,7 @@
     }
 
 
-    /* ID */
+    /* ID system — PR/MM/NNNN, resets on new month */
 
     function loadIdState() {
         const now = new Date().getMonth() + 1;
@@ -62,7 +62,7 @@
         let counter = parseInt(localStorage.getItem("pk_id_counter") || "1", 10);
 
         if (storedMonth !== now) {
-            storedMonth = now; counter = 1;
+            counter = 1;
             localStorage.setItem("pk_id_month", String(now));
             localStorage.setItem("pk_id_counter", "1");
         }
@@ -74,6 +74,9 @@
 
         const monthEl = $("currentIdMonth");
         if (monthEl) monthEl.textContent = pad2(now);
+        const seqEl = $("currentIdSeq");
+        if (seqEl) seqEl.textContent = pad4(counter);
+
         const idInput = $("mcqId");
         if (idInput) { idInput.value = idState.current; idInput.readOnly = !idState.manual; }
 
@@ -94,6 +97,8 @@
         idState.current = "PR/" + pad2(idState.month) + "/" + pad4(idState.counter);
         const idInput = $("mcqId");
         if (idInput) idInput.value = idState.current;
+        const seqEl = $("currentIdSeq");
+        if (seqEl) seqEl.textContent = pad4(idState.counter);
         renderPoster();
     }
 
@@ -162,7 +167,7 @@
     }
 
 
-    /* Builders */
+    /* HTML builders */
 
     function buildHeaderHTML() {
         return `
@@ -239,6 +244,11 @@
             ? buildExplanationHTML(d.explanationEn, d.explanationAs)
             : "";
 
+        // "Comment your answer" CTA — shown in Variant 1 (no explanation)
+        const ctaHTML = includeExplanation
+            ? ""
+            : `<div class="poster-cta">💬 Comment your answer</div>`;
+
         return `
             ${buildHeaderHTML()}
             <section class="poster-content">
@@ -250,6 +260,7 @@
                         <span class="poster-comments-title">Answer:</span>
                         <span class="poster-comments-text">${escapeHTML(answerText)}</span>
                     </div>
+                    ${ctaHTML}
                 </div>
             </section>
             ${buildFooterHTML(explHTML)}
@@ -275,12 +286,12 @@
 
     function renderPoster() {
         const poster = $("poster");
-        if (!poster) return;
+        if (!poster) { console.warn("Poster element missing"); return; }
 
         if (activeModule === "mcq") {
             const text = $("mcqContent") ? $("mcqContent").value : "";
             const data = parseMCQ(text);
-            const includeExpl = $("mcqIncludeExplanation") ? $("mcqIncludeExplanation").checked : true;
+            const includeExpl = $("mcqIncludeExplanation") ? $("mcqIncludeExplanation").checked : false;
             poster.className = "poster poster-bilingual";
             poster.innerHTML = buildMCQPosterHTML(data, includeExpl);
             syncHiddenFields(data, "mcq");
@@ -326,7 +337,6 @@
 
         const ratio = $("aspectRatio") ? $("aspectRatio").value : "4:3";
         let dims;
-
         if (ratio === "custom") {
             const w = parseInt($("customWidth").value, 10) || 1080;
             const h = parseInt($("customHeight").value, 10) || 1350;
@@ -337,26 +347,22 @@
 
         const pw = Math.round(dims.w / 2);
         const ph = Math.round(dims.h / 2);
-
         poster.style.width = pw + "px";
         poster.style.height = ph + "px";
         poster.style.setProperty("--poster-scale", (pw / 540).toFixed(3));
 
         const dimEl = $("canvasDimensions");
         if (dimEl) dimEl.textContent = dims.w + " × " + dims.h + " px";
-
         const ratioEl = $("canvasRatioLabel");
         if (ratioEl) ratioEl.textContent = ratio + " aspect ratio";
-
         const previewSize = $("previewSize");
         if (previewSize) previewSize.textContent = dims.w + " × " + dims.h;
-
         const previewAspect = $("previewAspectLabel");
         if (previewAspect) previewAspect.textContent = ratio;
     }
 
 
-    /* Fit (with footer awareness) */
+    /* Auto-fit */
 
     function fitPoster() {
         const poster = $("poster");
@@ -368,13 +374,9 @@
         poster.style.setProperty("--fit-scale", "1");
         void area.offsetHeight;
 
-        const minScale = 0.50;
-        const maxScale = 1.35;
-        const step = 0.02;
-        let scale = 1;
-        let safety = 0;
+        const minScale = 0.50, maxScale = 1.35, step = 0.02;
+        let scale = 1, safety = 0;
 
-        // Shrink until question fits content
         let avail = content.clientHeight;
         let used = area.offsetHeight;
         while (used > avail && scale > minScale && safety < 45) {
@@ -386,22 +388,20 @@
             safety++;
         }
 
-        // Also shrink if the whole poster overflows (footer/explanation case)
         const header = poster.querySelector(".poster-header");
         const footer = poster.querySelector(".poster-footer");
-        const posterInner = poster.clientHeight - 60; // padding 30 top + 30 bottom
+        const inner = poster.clientHeight - 60;
         while (scale > minScale && safety < 80) {
             const hH = header ? header.offsetHeight : 0;
             const cH = content.offsetHeight;
             const fH = footer ? footer.offsetHeight : 0;
-            if (hH + cH + fH <= posterInner) break;
+            if (hH + cH + fH <= inner) break;
             scale -= step;
             poster.style.setProperty("--fit-scale", scale.toFixed(3));
             void area.offsetHeight;
             safety++;
         }
 
-        // Grow only if content is short
         if (scale === 1) {
             let grow = 0;
             while (used < avail * 0.62 && scale < maxScale && grow < 30) {
@@ -441,10 +441,7 @@
         const ratio = $("aspectRatio").value;
         let dims;
         if (ratio === "custom") {
-            dims = {
-                w: parseInt($("customWidth").value, 10) || 1080,
-                h: parseInt($("customHeight").value, 10) || 1350
-            };
+            dims = { w: parseInt($("customWidth").value, 10) || 1080, h: parseInt($("customHeight").value, 10) || 1350 };
         } else {
             dims = ratioMap[ratio] || ratioMap["4:3"];
         }
@@ -457,7 +454,7 @@
     }
 
 
-    /* Module switching */
+    /* Module switch */
 
     function setModule(mod) {
         if (mod !== "mcq" && mod !== "qa") return;
@@ -474,8 +471,8 @@
         if (mcqFG) mcqFG.hidden = mod !== "mcq";
         if (qaFG)  qaFG.hidden  = mod !== "qa";
 
-        const mcqToggleGroup = $("mcqOutputToggleGroup");
-        if (mcqToggleGroup) mcqToggleGroup.hidden = mod !== "mcq";
+        const toggleGroup = $("mcqOutputToggleGroup");
+        if (toggleGroup) toggleGroup.hidden = mod !== "mcq";
 
         const bothBtn = $("exportBothButton");
         if (bothBtn) {
@@ -489,14 +486,12 @@
         }
 
         const meta = moduleMeta[mod];
-        const title = $("panelHeadingTitle");
-        const desc  = $("panelHeadingDesc");
-        const s1t   = $("step1Title");
-        const s1d   = $("step1Desc");
-        if (title) title.textContent = meta.panelTitle;
-        if (desc)  desc.textContent  = meta.panelDesc;
-        if (s1t)   s1t.textContent   = meta.step1Title;
-        if (s1d)   s1d.textContent   = meta.step1Desc;
+        const t = $("panelHeadingTitle"), d = $("panelHeadingDesc");
+        const s1t = $("step1Title"), s1d = $("step1Desc");
+        if (t) t.textContent = meta.panelTitle;
+        if (d) d.textContent = meta.panelDesc;
+        if (s1t) s1t.textContent = meta.step1Title;
+        if (s1d) s1d.textContent = meta.step1Desc;
 
         renderPoster();
         updateSaveStatus("Ready");
@@ -593,10 +588,18 @@
             renderPoster();
         });
 
-        const dl = $("downloadButton");
-        if (dl) dl.addEventListener("click", () => {
-            const b = $("exportButton"); if (b) b.click();
-        });
+        // Panel heading click → jump to MCQ module
+        const panelHeading = $("panelHeading");
+        if (panelHeading) {
+            const switchToMcq = () => setModule("mcq");
+            panelHeading.addEventListener("click", switchToMcq);
+            panelHeading.addEventListener("keydown", (e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    switchToMcq();
+                }
+            });
+        }
 
         window.addEventListener("resize", scheduleFit);
     }
@@ -608,9 +611,13 @@
         loadIdState();
         bindEvents();
         setModule("mcq");
+        // Ensure the explanation toggle is OFF by default (Variant 1)
+        const explToggle = $("mcqIncludeExplanation");
+        if (explToggle) explToggle.checked = false;
+        renderPoster();
         updateExportInfo();
         updateSaveStatus("Ready");
-        console.log("Preparekora editor ready (bilingual MCQ + Q&A).");
+        console.log("Preparekora editor ready.");
     }
 
     window.PreparekoraEditor = {
@@ -618,7 +625,7 @@
         getIdState: () => ({ ...idState }),
         isExplanationOn: () => {
             const t = $("mcqIncludeExplanation");
-            return t ? t.checked : true;
+            return t ? t.checked : false;
         },
         setExplanation: (on) => {
             const t = $("mcqIncludeExplanation");

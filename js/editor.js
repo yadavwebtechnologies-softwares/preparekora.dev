@@ -23,15 +23,11 @@
     const moduleMeta = {
         mcq: {
             panelTitle: "Create MCQ image",
-            panelDesc:  "Follow the steps to create your question image.",
-            step1Title: "Paste your MCQ format",
-            step1Desc:  "Paste the complete bilingual question with four options, answer, and explanation."
+            panelDesc:  "Follow the steps to create your question image."
         },
         qa: {
             panelTitle: "Create Q&A image",
-            panelDesc:  "Follow the steps to create your question and explanation image.",
-            step1Title: "Paste your Q&A format",
-            step1Desc:  "Paste the question and explanation in English and Assamese."
+            panelDesc:  "Follow the steps to create your question and explanation image."
         }
     };
 
@@ -50,11 +46,11 @@
 
     function scheduleFit() {
         clearTimeout(fitTimer);
-        fitTimer = setTimeout(fitPoster, 90);
+        fitTimer = setTimeout(fitPoster, 80);
     }
 
 
-    /* ID system */
+    /* ---------- ID system ---------- */
 
     function loadIdState() {
         const now = new Date().getMonth() + 1;
@@ -103,7 +99,7 @@
     }
 
 
-    /* Parsers */
+    /* ---------- Parsers ---------- */
 
     function parseMCQ(text) {
         const r = {
@@ -167,7 +163,7 @@
     }
 
 
-    /* Builders */
+    /* ---------- Builders ---------- */
 
     function buildHeaderHTML() {
         return `
@@ -199,7 +195,6 @@
         return `<div class="poster-subject">${parts.join(" ")}</div>`;
     }
 
-    /* ★ CHANGED — no divider between EN and AS question lines ★ */
     function buildQuestionHTML(en, as) {
         const parts = [];
         if (en) parts.push(`<span class="bilingual-line">${escapeHTML(en)}</span>`);
@@ -281,7 +276,7 @@
     }
 
 
-    /* Render */
+    /* ---------- Render ---------- */
 
     function renderPoster() {
         const poster = $("poster");
@@ -328,7 +323,7 @@
     }
 
 
-    /* Dimensions */
+    /* ---------- Dimensions ---------- */
 
     function applyPosterDimensions() {
         const poster = $("poster");
@@ -353,7 +348,7 @@
         const dimEl = $("canvasDimensions");
         if (dimEl) dimEl.textContent = dims.w + " × " + dims.h + " px";
         const ratioEl = $("canvasRatioLabel");
-        if (ratioEl) ratioEl.textContent = ratio + " aspect ratio";
+        if (ratioEl) ratioEl.textContent = ratio;
         const previewSize = $("previewSize");
         if (previewSize) previewSize.textContent = dims.w + " × " + dims.h;
         const previewAspect = $("previewAspectLabel");
@@ -361,7 +356,7 @@
     }
 
 
-    /* Auto-fit */
+    /* ---------- Auto-fit ---------- */
 
     function fitPoster() {
         const poster = $("poster");
@@ -373,7 +368,7 @@
         poster.style.setProperty("--fit-scale", "1");
         void area.offsetHeight;
 
-        const minScale = 0.50, maxScale = 1.35, step = 0.02;
+        const minScale = 0.50, maxScale = 1.30, step = 0.02;
         let scale = 1, safety = 0;
 
         let avail = content.clientHeight;
@@ -415,7 +410,7 @@
     }
 
 
-    /* QR */
+    /* ---------- QR ---------- */
 
     function initQR() {
         const el = $("previewQrCode");
@@ -425,8 +420,8 @@
         if (window.QRCode) {
             try {
                 new QRCode(el, {
-                    text: url, width: 54, height: 54,
-                    colorDark: "#252525", colorLight: "#ffffff",
+                    text: url, width: 50, height: 50,
+                    colorDark: "#1a1a1a", colorLight: "#ffffff",
                     correctLevel: QRCode.CorrectLevel.M
                 });
             } catch (err) { console.warn("QR init failed", err); }
@@ -434,7 +429,7 @@
     }
 
 
-    /* Export info */
+    /* ---------- Export info ---------- */
 
     function updateExportInfo() {
         const ratio = $("aspectRatio").value;
@@ -453,7 +448,7 @@
     }
 
 
-    /* Module switch */
+    /* ---------- Module switch ---------- */
 
     function setModule(mod) {
         if (mod !== "mcq" && mod !== "qa") return;
@@ -486,11 +481,8 @@
 
         const meta = moduleMeta[mod];
         const t = $("panelHeadingTitle"), d = $("panelHeadingDesc");
-        const s1t = $("step1Title"), s1d = $("step1Desc");
         if (t) t.textContent = meta.panelTitle;
         if (d) d.textContent = meta.panelDesc;
-        if (s1t) s1t.textContent = meta.step1Title;
-        if (s1d) s1d.textContent = meta.step1Desc;
 
         renderPoster();
         updateSaveStatus("Ready");
@@ -502,7 +494,7 @@
     }
 
 
-    /* Events */
+    /* ---------- Events ---------- */
 
     function bindEvents() {
         ["mcqContent", "qaContent"].forEach(id => {
@@ -544,9 +536,7 @@
             if (expBtn) expBtn.disabled = false;
             if (bothBtn && activeModule === "mcq") bothBtn.disabled = false;
             const st = $("previewStatus");
-            if (st) st.textContent = "Preview updated.";
-            const est = $("exportStatus");
-            if (est) est.textContent = "Ready to download.";
+            if (st) st.textContent = "Ready to download.";
             updateSaveStatus("Ready");
         });
 
@@ -592,10 +582,7 @@
             const switchToMcq = () => setModule("mcq");
             panelHeading.addEventListener("click", switchToMcq);
             panelHeading.addEventListener("keydown", (e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
-                    switchToMcq();
-                }
+                if (e.key === "Enter" || e.key === " ") { e.preventDefault(); switchToMcq(); }
             });
         }
 
@@ -603,7 +590,7 @@
     }
 
 
-    /* Init */
+    /* ---------- Init ---------- */
 
     function init() {
         loadIdState();

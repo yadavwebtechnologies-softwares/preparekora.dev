@@ -3,31 +3,492 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Q&A Studio — preparekora</title>
-  <link rel="stylesheet" href="css/style.css">
+<title>preparekora — Q&amp;A & MCQ Studio</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Assamese:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Roboto:wght@400;500;600;700;800&family=Noto+Sans+Assamese:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#fafafa;--surface:#fff;--primary:#1a1a1a;--secondary:#6b6b6b;
+  --muted:#999;--border:#e5e5e5;--accent:#a84b32;
+  --radius:8px;--sidebar-w:400px;--topbar-h:56px;
+  --font-ui:'Inter',system-ui,-apple-system,sans-serif;
+  --font-en:'Roboto',sans-serif;
+  --font-as:'Noto Sans Assamese','Noto Sans Bengali','Roboto',sans-serif;
+  --font-mcq-en:'Inter',system-ui,sans-serif;
+  /* QA poster */
+  --ph-brand-size:12px;--ph-subject-size:10px;--ph-id-size:9px;
+  --qa-label-size:12px;--qa-en-size:12px;--qa-as-size:11px;
+  --pf-brand-size:8px;--pf-page-size:8px;--ph-qr-size:48px;
+  /* MCQ frame fixed colors */
+  --mcq-ink:#0e1524;--mcq-ink2:#39445a;--mcq-muted:#6d788c;
+  --mcq-line:#e4e9f1;--mcq-chip:#f2f5fa;--mcq-brand:#1b57d6;
+  --mcq-brand-soft:#eaf0fd;--mcq-ok:#0b8a4b;--mcq-ok-bg:#eaf8f0;--mcq-ok-line:#a6ddbf;
+}
+body{font-family:var(--font-ui);background:var(--bg);color:var(--primary);
+  font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit}
+button:disabled{opacity:.5;cursor:not-allowed}
+input,textarea{font-family:inherit;font-size:inherit;width:100%}
+[hidden]{display:none!important}
+
+/* ---------- Topbar ---------- */
+.topbar{display:flex;align-items:center;justify-content:space-between;
+  height:var(--topbar-h);padding:0 20px;background:var(--surface);
+  border-bottom:1px solid var(--border);position:sticky;top:0;z-index:60}
+.brand{font-size:16px;font-weight:800;letter-spacing:-.4px;
+  display:inline-flex;align-items:center;gap:8px}
+.brand span{color:var(--muted);font-weight:500}
+.brand-tag{font-size:10px;text-transform:uppercase;letter-spacing:.8px;
+  font-weight:700;padding:3px 7px;background:#f0f0f0;border-radius:4px;
+  color:var(--secondary)}
+
+/* ---------- Workspace ---------- */
+.workspace{display:grid;grid-template-columns:var(--sidebar-w) minmax(0,1fr);
+  height:calc(100vh - var(--topbar-h));overflow:hidden}
+
+/* ---------- Sidebar ---------- */
+.sidebar{background:var(--surface);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;overflow:hidden}
+
+/* Format tabs at very top */
+.format-tabs{display:grid;grid-template-columns:1fr 1fr;gap:4px;
+  padding:14px 20px;border-bottom:1px solid var(--border);background:#fafafa}
+.format-tab{padding:9px 10px;font-size:12.5px;font-weight:600;
+  border-radius:7px;background:#fff;color:var(--secondary);
+  border:1px solid var(--border);transition:all .15s ease;
+  display:flex;align-items:center;justify-content:center;gap:6px}
+.format-tab:hover{color:var(--primary);border-color:#ccc}
+.format-tab.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+.format-tab .dot{width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.5}
+.format-tab.active .dot{opacity:1;background:#7cff9e}
+
+.sidebar-scroll{flex:1;overflow-y:auto;padding:20px;scrollbar-width:thin}
+.sidebar-scroll::-webkit-scrollbar{width:6px}
+.sidebar-scroll::-webkit-scrollbar-thumb{background:#d5d5d5;border-radius:10px}
+
+.field-group{margin-bottom:16px}
+.field-group:last-child{margin-bottom:0}
+.field-group label{display:block;margin-bottom:6px;font-size:11.5px;
+  font-weight:600;color:var(--secondary);text-transform:uppercase;
+  letter-spacing:.5px}
+.input{padding:9px 12px;font-size:13.5px;border:1px solid var(--border);
+  border-radius:var(--radius);background:#fff;color:var(--primary);
+  transition:border-color .15s ease,box-shadow .15s ease}
+.input:focus{outline:none;border-color:#999;box-shadow:0 0 0 3px rgba(0,0,0,.05)}
+textarea.input{min-height:220px;resize:vertical;
+  font-family:ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+  font-size:12px;line-height:1.65}
+.hint{margin-top:6px;font-size:11.5px;color:var(--muted);line-height:1.5}
+.hint code{background:#f0f0f0;padding:1px 5px;border-radius:4px;
+  font-size:11px;font-family:ui-monospace,monospace}
+
+/* Ratio buttons — 4 columns with dimensions */
+.ratio-group{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.ratio-btn{padding:8px 3px;font-size:11.5px;font-weight:600;
+  border:1px solid var(--border);border-radius:var(--radius);
+  background:#fff;color:var(--secondary);transition:all .15s ease;
+  display:flex;flex-direction:column;align-items:center;gap:2px;line-height:1.2}
+.ratio-btn .ratio-label{font-weight:700}
+.ratio-btn .ratio-dim{font-size:9.5px;color:var(--muted);font-weight:500}
+.ratio-btn:hover{color:var(--primary);border-color:#ccc}
+.ratio-btn.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+.ratio-btn.active .ratio-dim{color:rgba(255,255,255,.75)}
+
+/* Layout toggle (QA only) */
+.layout-group{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.layout-btn{padding:9px 4px;font-size:12px;font-weight:600;
+  border:1px solid var(--border);border-radius:var(--radius);
+  background:#fff;color:var(--secondary);transition:all .15s ease;
+  display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.layout-btn:hover{color:var(--primary);border-color:#ccc}
+.layout-btn.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+.layout-btn .icon{display:inline-flex;width:12px;height:12px;gap:1px}
+.layout-btn .icon span{background:currentColor;border-radius:1px}
+.layout-btn .icon.cols-1 span{width:100%;height:100%}
+.layout-btn .icon.cols-2 span{width:50%;height:100%}
+
+/* Theme grid (QA only) */
+.theme-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.theme-swatch{aspect-ratio:1;border-radius:10px;border:2px solid transparent;
+  position:relative;cursor:pointer;padding:0;overflow:hidden;
+  transition:transform .15s ease,box-shadow .15s ease;
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.06)}
+.theme-swatch:hover{transform:scale(1.06)}
+.theme-swatch.active{border-color:var(--primary);
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.06),0 0 0 2px #fff,0 0 0 3px var(--primary)}
+.theme-swatch.active::after{content:"✓";position:absolute;inset:0;
+  display:grid;place-items:center;background:rgba(0,0,0,.28);color:#fff;
+  font-size:16px;font-weight:800}
+
+.status{padding:10px 12px;background:#f5f5f5;border-radius:var(--radius);
+  font-size:12px;color:var(--secondary);line-height:1.55;margin-top:16px}
+.status strong{color:var(--primary);font-weight:700}
+
+/* Actions */
+.actions{padding:16px 20px;border-top:1px solid var(--border);
+  display:flex;flex-direction:column;gap:8px;background:var(--surface)}
+.btn{padding:11px 16px;font-size:14px;font-weight:700;border-radius:var(--radius);
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  transition:all .15s ease}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-primary:hover:not(:disabled){background:#333}
+.btn-secondary{background:#fff;color:var(--primary);border:1px solid var(--border)}
+.btn-secondary:hover:not(:disabled){background:#f5f5f5;border-color:#ccc}
+.btn-full{width:100%}
+
+/* Result sidebar */
+.result-sidebar{display:flex;flex-direction:column;align-items:center;
+  text-align:center;padding:30px 16px}
+.result-sidebar-icon{width:52px;height:52px;border-radius:50%;
+  background:#e8f5e9;color:#2e7d32;display:grid;place-items:center;
+  font-size:24px;font-weight:800;margin-bottom:16px}
+.result-sidebar-title{font-size:16px;font-weight:700;margin-bottom:8px}
+.result-sidebar-text{font-size:12.5px;color:var(--secondary);line-height:1.6;
+  max-width:280px}
+.result-sidebar-list{margin-top:20px;width:100%;display:flex;
+  flex-direction:column;gap:6px}
+.result-sidebar-item{display:flex;align-items:center;justify-content:space-between;
+  gap:8px;padding:8px 10px;background:#fafafa;border-radius:6px;
+  font-size:12px;border:1px solid var(--border)}
+.result-sidebar-item .rsi-page{font-weight:700;color:var(--primary)}
+.result-sidebar-item .rsi-count{font-size:10.5px;color:var(--secondary);
+  background:#eef4ff;padding:2px 6px;border-radius:4px}
+.result-sidebar-item .rsi-id{color:var(--secondary);
+  font-family:ui-monospace,monospace;font-size:10.5px}
+.result-sidebar-item.done{background:#f0f9f0;border-color:#d4ecd4}
+.result-sidebar-item.done .rsi-page::before{content:"✓ ";color:#2e7d32;font-weight:800}
+
+/* ---------- Preview panel ---------- */
+.preview-panel{display:flex;flex-direction:column;padding:20px;overflow:hidden}
+.preview-edit{display:flex;flex-direction:column;height:100%;overflow:hidden}
+.preview-toolbar{display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:14px;gap:12px;flex-shrink:0}
+.preview-toolbar h2{font-size:15px;font-weight:700}
+.preview-toolbar h2 small{font-weight:500;font-size:11px;color:#999}
+
+.preview-stage{flex:1;min-height:0;display:flex;align-items:center;
+  justify-content:center;overflow:auto;padding:24px;
+  border-radius:var(--radius);background-color:#f0f0f0;
+  background-image:linear-gradient(45deg,#e8e8e8 25%,transparent 25%),
+    linear-gradient(-45deg,#e8e8e8 25%,transparent 25%),
+    linear-gradient(45deg,transparent 75%,#e8e8e8 75%),
+    linear-gradient(-45deg,transparent 75%,#e8e8e8 75%);
+  background-size:16px 16px;background-position:0 0,0 8px,8px -8px,-8px 0}
+.preview-stage::-webkit-scrollbar{width:6px;height:6px}
+.preview-stage::-webkit-scrollbar-thumb{background:#d5d5d5;border-radius:10px}
+
+/* Result view */
+.preview-result{display:flex;flex-direction:column;height:100%;overflow:hidden}
+.result-toolbar{display:flex;align-items:flex-start;justify-content:space-between;
+  margin-bottom:14px;gap:12px;flex-shrink:0}
+.result-toolbar h2{font-size:15px;font-weight:700}
+.result-toolbar p{font-size:12px;color:var(--secondary);margin-top:3px}
+.result-toolbar-badge{font-size:11px;font-weight:700;padding:5px 9px;
+  background:#e8f5e9;color:#2e7d32;border-radius:6px;white-space:nowrap}
+
+.result-grid{flex:1;min-height:0;overflow-y:auto;padding:8px 4px 20px;
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));
+  gap:20px;justify-content:center;align-content:start;scrollbar-width:thin}
+.result-grid::-webkit-scrollbar{width:6px}
+.result-grid::-webkit-scrollbar-thumb{background:#d5d5d5;border-radius:10px}
+
+.result-card{display:flex;flex-direction:column;gap:10px}
+.result-preview{position:relative;overflow:hidden;
+  border-radius:10px;border:1px solid var(--border);background:#fff;
+  box-shadow:0 2px 12px rgba(0,0,0,.06)}
+.result-meta{display:flex;align-items:center;justify-content:space-between;
+  gap:8px;padding:0 2px}
+.result-meta-text{display:flex;flex-direction:column;gap:2px;min-width:0}
+.result-meta-page{font-size:12px;font-weight:700;color:var(--primary)}
+.result-meta-page .rmp-count{color:var(--secondary);font-weight:500;font-size:11px}
+.result-meta-id{font-size:10.5px;color:var(--secondary);
+  font-family:ui-monospace,monospace}
+.btn-download{padding:7px 12px;font-size:12px;font-weight:700;
+  background:var(--primary);color:#fff;border-radius:6px;
+  display:inline-flex;align-items:center;gap:5px;flex-shrink:0;
+  transition:background .15s ease}
+.btn-download:hover:not(:disabled){background:#333}
+.btn-download.done{background:#2e7d32}
+.btn-download.done::before{content:"✓ ";font-weight:800}
+
+/* ============================================================
+   QA POSTER (themes)
+============================================================ */
+.poster{
+  --poster-bg:linear-gradient(135deg,#fef9f3 0%,#fdf2e9 100%);
+  --poster-text:#2d2419;--poster-text-soft:#5a4a38;
+  --poster-accent:#a84b32;--poster-border:#e8ddd0;
+  width:540px;max-width:100%;aspect-ratio:var(--aspect-ratio,3/4);
+  padding:22px 24px;display:flex;flex-direction:column;
+  background:var(--poster-bg);color:var(--poster-text);
+  border:1px solid rgba(0,0,0,.06);border-radius:12px;
+  box-shadow:0 4px 20px rgba(0,0,0,.06);
+  font-family:var(--font-ui);flex-shrink:0}
+
+.poster[data-theme="cream"]{--poster-bg:linear-gradient(135deg,#fef9f3 0%,#fdf2e9 100%);--poster-text:#2d2419;--poster-text-soft:#5a4a38;--poster-accent:#a84b32;--poster-border:#e8ddd0}
+.poster[data-theme="lavender"]{--poster-bg:linear-gradient(135deg,#f5f3fb 0%,#ede7f6 100%);--poster-text:#2a2438;--poster-text-soft:#5a526b;--poster-accent:#7c5cb8;--poster-border:#ddd5eb}
+.poster[data-theme="mint"]{--poster-bg:linear-gradient(135deg,#f0f8f3 0%,#e0f2e7 100%);--poster-text:#1c3025;--poster-text-soft:#3d5e48;--poster-accent:#1f7a4a;--poster-border:#c8dfd1}
+.poster[data-theme="sky"]{--poster-bg:linear-gradient(135deg,#f0f7fd 0%,#e3eef9 100%);--poster-text:#1a2d40;--poster-text-soft:#415a75;--poster-accent:#2a6ba8;--poster-border:#c4d8eb}
+.poster[data-theme="rose"]{--poster-bg:linear-gradient(135deg,#fdf3f5 0%,#fce7ec 100%);--poster-text:#3a1f28;--poster-text-soft:#6b4552;--poster-accent:#a83b5b;--poster-border:#e8d0d8}
+.poster[data-theme="butter"]{--poster-bg:linear-gradient(135deg,#fffdf0 0%,#fdf6d8 100%);--poster-text:#3a3018;--poster-text-soft:#6b5c30;--poster-accent:#a88520;--poster-border:#e8ddb0}
+.poster[data-theme="grey"]{--poster-bg:linear-gradient(135deg,#f7f8fa 0%,#ecedf1 100%);--poster-text:#252830;--poster-text-soft:#4a4e58;--poster-accent:#4a4e58;--poster-border:#d8dae0}
+.poster[data-theme="coral"]{--poster-bg:linear-gradient(135deg,#fff5f0 0%,#ffe8de 100%);--poster-text:#3d2119;--poster-text-soft:#6b3f30;--poster-accent:#c25630;--poster-border:#efd0c0}
+.poster[data-theme="teal"]{--poster-bg:linear-gradient(135deg,#f0f9f8 0%,#dff1ef 100%);--poster-text:#1a3532;--poster-text-soft:#3d5a55;--poster-accent:#1f7a70;--poster-border:#c4d8d5}
+.poster[data-theme="peach"]{--poster-bg:linear-gradient(135deg,#fff6f0 0%,#ffe9d8 100%);--poster-text:#3a2418;--poster-text-soft:#6b4830;--poster-accent:#c27028;--poster-border:#e8d4bc}
+
+.poster-header{display:grid;grid-template-columns:1fr auto 1fr;
+  align-items:center;gap:14px;padding-bottom:10px;
+  border-bottom:1px solid var(--poster-border);flex-shrink:0}
+.ph-brand{font-size:var(--ph-brand-size);font-weight:800;justify-self:start;
+  white-space:nowrap;color:var(--poster-text)}
+.ph-brand .ph-domain{color:var(--poster-text-soft);font-weight:500;opacity:.75}
+.ph-subject{justify-self:center;font-size:var(--ph-subject-size);
+  font-weight:700;color:var(--poster-accent);text-transform:uppercase;
+  letter-spacing:.6px;text-align:center;overflow-wrap:anywhere;max-width:200px;
+  line-height:1.3}
+.ph-id{justify-self:end;padding:3px 7px;font-size:var(--ph-id-size);
+  font-weight:700;color:var(--poster-text-soft);
+  border:1px solid var(--poster-border);border-radius:9px;
+  white-space:nowrap;letter-spacing:.3px;background:rgba(255,255,255,.5)}
+
+.poster-body{flex:1;min-height:0;padding:14px 0;overflow:hidden;
+  display:flex;flex-direction:column}
+.poster-body-inner{width:100%;height:100%;display:flex;flex-direction:column}
+.qa-item{min-width:0}
+.qa-line{display:flex;gap:6px;align-items:baseline}
+.qa-q{margin-bottom:3px}
+.qa-lbl{flex-shrink:0;min-width:26px;font-size:var(--qa-label-size);
+  font-weight:800;color:var(--poster-accent);line-height:1.45;letter-spacing:.2px}
+.qa-lbl-a{color:var(--poster-text)}
+.qa-content{flex:1;min-width:0;line-height:1.45;text-align:justify;
+  text-justify:inter-word;overflow-wrap:anywhere;word-break:break-word;
+  font-size:var(--qa-en-size)}
+.qa-en{font-family:var(--font-en);font-size:var(--qa-en-size);
+  color:var(--poster-text);font-weight:600}
+.qa-as{font-family:var(--font-as);font-size:var(--qa-as-size);
+  color:var(--poster-text-soft);font-weight:600}
+.qa-1col{display:flex;flex-direction:column;gap:14px;margin:auto 0}
+.qa-1col .qa-item+.qa-item{padding-top:12px;
+  border-top:1px solid var(--poster-border);opacity:.98}
+.qa-2col{display:grid;grid-template-columns:1fr 1fr;gap:18px;
+  align-content:start;height:100%}
+.qa-col{display:flex;flex-direction:column;gap:10px;min-width:0}
+.qa-col .qa-item{padding-bottom:10px;border-bottom:1px solid var(--poster-border)}
+.qa-col .qa-item:last-child{border-bottom:0;padding-bottom:0}
+
+.poster-footer{flex-shrink:0;padding-top:10px;
+  border-top:1px solid var(--poster-border);
+  display:flex;align-items:center;justify-content:space-between;gap:12px}
+.pf-brand{font-size:var(--pf-brand-size);font-weight:700;
+  color:var(--poster-text-soft);letter-spacing:.3px;opacity:.8}
+.pf-page{font-size:var(--pf-page-size);font-weight:600;
+  color:var(--poster-text-soft);letter-spacing:.5px;opacity:.55}
+.pf-qr{width:var(--ph-qr-size);height:var(--ph-qr-size);
+  background:#fff;padding:4px;border-radius:4px;
+  display:grid;place-items:center;overflow:hidden;flex-shrink:0;
+  box-shadow:0 0 0 1px rgba(0,0,0,.06)}
+.pf-qr img,.pf-qr canvas{width:calc(var(--ph-qr-size) - 8px)!important;
+  height:calc(var(--ph-qr-size) - 8px)!important;display:block}
+.empty-state{padding:40px 20px;text-align:center;
+  color:var(--poster-text-soft);opacity:.7;font-size:13px}
+
+/* ============================================================
+   MCQ EXPLANATION FRAME (exact design from reference)
+   Renders at 1080 native width, scaled by --z on wrapper
+============================================================ */
+.mcq-viewport{width:100%;position:relative;overflow:hidden;
+  border-radius:12px;background:#fff}
+.mcq-frame{
+  width:1080px;height:var(--frame-h,1350px);
+  transform:scale(var(--z,0.5));transform-origin:top left;
+  background:#fff;color:var(--mcq-ink);
+  padding:var(--pad,64px);
+  display:flex;flex-direction:column;gap:calc(24px * var(--s,1));
+  position:absolute;top:0;left:0;
+  font-family:var(--font-mcq-en);
+  --frame-h:1350px;--z:0.5;--s:1;--pad:64px;
+}
+
+.mcq-frame.r11 { --s:.82;  --pad:52px; --frame-h:1080px }
+.mcq-frame.r34 { --s:.92;  --pad:58px; --frame-h:1440px }
+.mcq-frame.r45 { --s:1;    --pad:64px; --frame-h:1350px }
+.mcq-frame.r916{ --s:1.06; --pad:72px; --frame-h:1920px }
+
+/* Header */
+.mcq-frame .topbar{display:flex;justify-content:space-between;align-items:center;
+  gap:calc(16px * var(--s));flex:0 0 auto;height:auto;padding:0;
+  background:transparent;border:0;position:static}
+.mcq-frame .pill{font-size:calc(23px * var(--s));font-weight:600;
+  padding:calc(9px * var(--s)) calc(20px * var(--s));
+  border-radius:999px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  color:var(--mcq-brand);background:var(--mcq-brand-soft)}
+.mcq-frame .pill.dark{color:#fff;background:var(--mcq-ink);flex:0 0 auto}
+
+/* Question */
+.mcq-frame .q{flex:0 0 auto}
+.mcq-frame .q-label{font-size:calc(19px * var(--s));font-weight:700;
+  letter-spacing:.16em;text-transform:uppercase;color:var(--mcq-muted);
+  margin-bottom:calc(12px * var(--s))}
+.mcq-frame .q-en{font-size:calc(41px * var(--s));font-weight:700;
+  line-height:1.24;letter-spacing:-.015em}
+.mcq-frame .q-as{font-family:var(--font-as);font-size:calc(33px * var(--s));
+  font-weight:500;line-height:1.45;color:var(--mcq-ink2);
+  margin-top:calc(10px * var(--s))}
+
+/* Options */
+.mcq-frame .opts{list-style:none;display:flex;flex-direction:column;
+  gap:calc(13px * var(--s));flex:0 0 auto}
+.mcq-frame .opt{display:flex;align-items:center;gap:calc(18px * var(--s));
+  padding:calc(14px * var(--s)) calc(20px * var(--s));
+  border:2px solid var(--mcq-line);border-radius:calc(18px * var(--s));
+  background:#fff}
+.mcq-frame .opt .key{flex:0 0 auto;
+  width:calc(50px * var(--s));height:calc(50px * var(--s));
+  border-radius:50%;display:grid;place-items:center;
+  background:var(--mcq-chip);color:var(--mcq-ink2);
+  font-size:calc(24px * var(--s));font-weight:700}
+.mcq-frame .opt .txt{display:flex;flex-direction:column;min-width:0}
+.mcq-frame .opt .en{font-size:calc(30px * var(--s));font-weight:600;line-height:1.3}
+.mcq-frame .opt .as{font-family:var(--font-as);
+  font-size:calc(24px * var(--s));color:var(--mcq-muted);
+  line-height:1.4;margin-top:calc(2px * var(--s))}
+.mcq-frame .opt .tick{margin-left:auto;font-size:calc(32px * var(--s));
+  font-weight:800;color:var(--mcq-ok);opacity:0}
+.mcq-frame .opt.is-correct{border-color:var(--mcq-ok-line);background:var(--mcq-ok-bg)}
+.mcq-frame .opt.is-correct .key{background:var(--mcq-ok);color:#fff}
+.mcq-frame .opt.is-correct .as{color:#3f7a5c}
+.mcq-frame .opt.is-correct .tick{opacity:1}
+
+/* Explanation */
+.mcq-frame .explain{flex:1 1 auto;min-height:0;overflow:hidden;
+  display:flex;flex-direction:column;gap:calc(12px * var(--s));
+  padding:calc(26px * var(--s)) calc(30px * var(--s));
+  border:2px solid var(--mcq-line);
+  border-left:calc(8px * var(--s)) solid var(--mcq-brand);
+  border-radius:calc(20px * var(--s));background:#fcfdff}
+.mcq-frame .ex-head{display:flex;align-items:baseline;gap:calc(12px * var(--s));
+  font-size:calc(21px * var(--s));font-weight:800;letter-spacing:.15em;
+  text-transform:uppercase;color:var(--mcq-brand)}
+.mcq-frame .ex-head .as-head{font-family:var(--font-as);
+  font-size:calc(23px * var(--s));font-weight:600;
+  letter-spacing:0;text-transform:none;color:var(--mcq-muted)}
+.mcq-frame .ex-en{font-size:calc(29px * var(--s));line-height:1.5;color:var(--mcq-ink2)}
+.mcq-frame .rule{height:2px;background:var(--mcq-line);
+  margin:calc(4px * var(--s)) 0;flex:0 0 auto}
+.mcq-frame .ex-as{font-family:var(--font-as);
+  font-size:calc(27px * var(--s));line-height:1.62;color:var(--mcq-ink2)}
+
+/* Footer */
+.mcq-frame .foot{flex:0 0 auto;display:flex;justify-content:space-between;
+  align-items:center;border-top:2px solid var(--mcq-line);
+  padding-top:calc(14px * var(--s));font-size:calc(21px * var(--s));
+  font-weight:600;color:var(--mcq-muted);letter-spacing:.02em}
+.mcq-frame .foot .set{color:var(--mcq-ink2)}
+
+/* Frame viewport containers */
+.preview-stage .mcq-viewport{max-width:min(100%, 540px);margin:0 auto;
+  box-shadow:0 4px 20px rgba(0,0,0,.08)}
+.preview-stage .poster{max-width:min(100%, 540px);margin:0 auto}
+
+/* Card mini frames */
+.result-card .mcq-viewport,
+.result-card .poster-viewport{width:100%;border-radius:8px;
+  box-shadow:0 1px 6px rgba(0,0,0,.04)}
+.result-card .poster-viewport{position:relative;overflow:hidden;
+  border-radius:8px;background:#fff}
+.result-card .poster-viewport .poster{width:540px!important;
+  max-width:none!important;position:absolute;top:0;left:0;
+  transform:scale(var(--z,0.5));transform-origin:top left;
+  border-radius:0!important;border:none!important;box-shadow:none!important}
+
+/* Overlay */
+.export-overlay{position:fixed;inset:0;z-index:1000;display:flex;
+  align-items:center;justify-content:center;padding:20px;
+  background:rgba(255,255,255,.94);backdrop-filter:blur(10px)}
+.export-loader{width:min(100%,300px);padding:26px;text-align:center;
+  background:#fff;border:1px solid var(--border);border-radius:12px;
+  box-shadow:0 8px 30px rgba(0,0,0,.08)}
+.loader-spinner{width:32px;height:32px;margin:0 auto 16px;
+  border:3px solid #eee;border-top-color:var(--primary);border-radius:50%;
+  animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.export-loader h3{font-size:15px;font-weight:700}
+.export-loader p{margin-top:6px;font-size:12.5px;color:var(--secondary)}
+.progress-track{height:4px;margin-top:16px;border-radius:4px;
+  background:#eee;overflow:hidden}
+.progress-bar{height:100%;width:0;background:var(--primary);
+  border-radius:4px;transition:width .2s ease}
+
+/* ============================================================
+   RESPONSIVE
+============================================================ */
+@media (max-width:1050px){:root{--sidebar-w:360px}}
+@media (max-width:860px){
+  :root{--topbar-h:52px}
+  .workspace{grid-template-columns:1fr;height:auto;overflow:visible;
+    min-height:calc(100vh - var(--topbar-h))}
+  .sidebar{border-right:0;border-bottom:1px solid var(--border);
+    height:auto;max-height:none}
+  .sidebar-scroll{overflow:visible;max-height:none}
+  .actions{position:sticky;bottom:0;z-index:40;
+    box-shadow:0 -4px 12px rgba(0,0,0,.06)}
+  .preview-panel{padding:16px 12px;min-height:520px}
+  .preview-stage{padding:14px;min-height:400px}
+  .result-grid{grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px}
+  .format-tabs{padding:10px 14px}
+  .sidebar-scroll{padding:14px}
+  .actions{padding:12px 14px}
+}
+@media (max-width:480px){
+  .topbar{padding:0 12px}
+  .brand{font-size:15px}
+  .brand-tag{display:none}
+  .ratio-group{grid-template-columns:repeat(2,1fr);gap:6px}
+  .ratio-btn{padding:9px 4px}
+  .preview-panel{padding:12px 8px}
+  .preview-stage{padding:10px;min-height:340px}
+  .result-grid{grid-template-columns:1fr 1fr;gap:10px}
+  .result-meta-page,.result-meta-id{font-size:10.5px}
+  .btn-download{padding:6px 9px;font-size:11px}
+}
+</style>
 </head>
 <body>
 
 <div class="topbar">
-  <div class="brand">preparekora<span>.in</span><span class="brand-tag">Q&amp;A</span></div>
+  <div class="brand">preparekora<span>.in</span><span class="brand-tag">Studio</span></div>
 </div>
 
 <main class="workspace">
 
+  <!-- ==================== SIDEBAR ==================== -->
   <aside class="sidebar">
-    <div class="sidebar-scroll" id="sidebarInputs">
-      <div class="field-group">
-        <label for="subject">Subject</label>
-        <input id="subject" class="input" type="text" value="History" placeholder="e.g. History, Geography">
-      </div>
 
-      <div class="field-group">
-        <label for="input">Q&amp;A input</label>
-        <textarea id="input" class="input" spellcheck="false">Q: Who was the first President of India? (ভাৰতৰ প্ৰথম ৰাষ্ট্ৰপতি কোন আছিল?)
+    <!-- Format tabs -->
+    <div class="format-tabs" role="tablist">
+      <button class="format-tab active" data-format="qa" type="button">
+        <span class="dot"></span>Q&amp;A Image
+      </button>
+      <button class="format-tab" data-format="mcq" type="button">
+        <span class="dot"></span>MCQ + Explanation
+      </button>
+    </div>
+
+    <!-- EDIT mode sidebar -->
+    <div class="sidebar-scroll" id="sidebarInputs">
+
+      <!-- ============ QA MODE INPUTS ============ -->
+      <div id="qaInputs">
+        <div class="field-group">
+          <label for="subject">Subject</label>
+          <input id="subject" class="input" type="text" value="History">
+        </div>
+
+        <div class="field-group">
+          <label for="input">Q&amp;A input</label>
+          <textarea id="input" class="input" spellcheck="false">Q: Who was the first President of India? (ভাৰতৰ প্ৰথম ৰাষ্ট্ৰপতি কোন আছিল?)
 Ans: Dr. Rajendra Prasad (ড° ৰাজেন্দ্ৰ প্ৰসাদ)
 
 Q: In which year did India gain independence? (ভাৰতে কোন বছৰত স্বাধীনতা লাভ কৰিছিল?)
@@ -62,46 +523,105 @@ Ans: Ganga (গংগা)
 
 Q: Who was the first woman Prime Minister of India? (ভাৰতৰ প্ৰথম মহিলা প্ৰধানমন্ত্ৰী কোন আছিল?)
 Ans: Indira Gandhi (ইন্দিৰা গান্ধী)</textarea>
-        <p class="hint">Format: <code>Q: English (Assamese)</code> then <code>Ans: English (Assamese)</code></p>
+          <p class="hint">Format: <code>Q: English (Assamese)</code> then <code>Ans: English (Assamese)</code></p>
+        </div>
       </div>
 
+      <!-- ============ MCQ MODE INPUTS ============ -->
+      <div id="mcqInputs" hidden>
+        <div class="field-group">
+          <label for="mcqInput">MCQ + Explanation input</label>
+          <textarea id="mcqInput" class="input" spellcheck="false">Subject: Indian Art & Architecture
+Set: SS-ADRE-SET-002 · Q3
+Q-EN: Which dynasty built the Kailasanathar Temple at Kanchipuram?
+Q-AS: কাঞ্চীপুৰমৰ কৈলাসনাথৰ মন্দিৰ কোনটো ৰাজবংশই নিৰ্মাণ কৰিছিল?
+A-EN: Chola dynasty
+A-AS: চোল ৰাজবংশ
+B-EN: Pallava dynasty
+B-AS: পল্লৱ ৰাজবংশ
+C-EN: Chalukya dynasty
+C-AS: চালুক্য ৰাজবংশ
+D-EN: Pandya dynasty
+D-AS: পাণ্ড্য ৰাজবংশ
+Ans: B
+Exp-EN: King Rajasimha (Narasimhavarman II) of the Pallava dynasty built it around 700 CE. It is one of the earliest structural stone temples of South India and a fine example of early Dravidian architecture.
+Exp-AS: পল্লৱ ৰজা ৰাজসিংহ (নৰসিংহবৰ্মন দ্বিতীয়) য়ে প্ৰায় ৭০০ খ্ৰীষ্টাব্দত ইয়াক নিৰ্মাণ কৰিছিল। এইটো দক্ষিণ ভাৰতৰ আটাইতকৈ পুৰণি স্থাপত্য শিলৰ মন্দিৰসমূহৰ এটা আৰু প্ৰাৰম্ভিক দ্ৰাবিড় স্থাপত্যৰ উৎকৃষ্ট উদাহৰণ।
+
+---
+
+Subject: Indian Art & Architecture
+Set: SS-ADRE-SET-002 · Q4
+Q-EN: The Konark Sun Temple is located in which state of India?
+Q-AS: কোণাৰ্ক সূৰ্য মন্দিৰ ভাৰতৰ কোনখন ৰাজ্যত অৱস্থিত?
+A-EN: West Bengal
+A-AS: পশ্চিম বংগ
+B-EN: Odisha
+B-AS: ওড়িশা
+C-EN: Bihar
+C-AS: বিহাৰ
+D-EN: Jharkhand
+D-AS: ঝাৰখণ্ড
+Ans: B
+Exp-EN: The Konark Sun Temple is a 13th-century CE Hindu temple dedicated to the Sun God, built by King Narasimhadeva I of the Eastern Ganga dynasty, located in Odisha.
+Exp-AS: কোণাৰ্ক সূৰ্য মন্দিৰ হৈছে সূৰ্য দেৱতাক উৎসৰ্গিত ১৩ শতিকাৰ এটা হিন্দু মন্দিৰ, যিটো পূৱ গংগা ৰাজবংশৰ ৰজা নৰসিংহদেৱ প্ৰথমে নিৰ্মাণ কৰিছিল, ওড়িশাত অৱস্থিত।</textarea>
+          <p class="hint">Separate multiple MCQs with <code>---</code> on its own line. Each block becomes one image.</p>
+          <p class="hint" style="margin-top:6px">Required: <code>Subject</code>, <code>Q-EN</code>, <code>Q-AS</code>, <code>A-EN/AS</code>, <code>B-EN/AS</code>, <code>C-EN/AS</code>, <code>D-EN/AS</code>, <code>Ans</code>, <code>Exp-EN</code>, <code>Exp-AS</code>. Optional: <code>Set</code>.</p>
+        </div>
+      </div>
+
+      <!-- ============ SHARED: RATIO ============ -->
       <div class="field-group">
         <label>Aspect ratio</label>
-        <div class="toggle-group ratio-group">
-          <button class="toggle-btn ratio-btn" data-ratio="1:1" type="button">1:1</button>
-          <button class="toggle-btn ratio-btn active" data-ratio="3:4" type="button">3:4</button>
-          <button class="toggle-btn ratio-btn" data-ratio="4:5" type="button">4:5</button>
-          <button class="toggle-btn ratio-btn" data-ratio="9:16" type="button">9:16</button>
+        <div class="ratio-group">
+          <button class="ratio-btn" data-ratio="1:1" type="button">
+            <span class="ratio-label">1:1</span>
+            <span class="ratio-dim">1080×1080</span>
+          </button>
+          <button class="ratio-btn" data-ratio="3:4" type="button">
+            <span class="ratio-label">3:4</span>
+            <span class="ratio-dim">1080×1440</span>
+          </button>
+          <button class="ratio-btn active" data-ratio="4:5" type="button">
+            <span class="ratio-label">4:5</span>
+            <span class="ratio-dim">1080×1350</span>
+          </button>
+          <button class="ratio-btn" data-ratio="9:16" type="button">
+            <span class="ratio-label">9:16</span>
+            <span class="ratio-dim">1080×1920</span>
+          </button>
         </div>
       </div>
 
-      <div class="field-group">
-        <label>Layout</label>
-        <div class="toggle-group layout-group">
-          <button class="toggle-btn layout-btn" data-layout="1col" type="button">
-            <span class="icon cols-1"><span></span></span>1 Column
-          </button>
-          <button class="toggle-btn layout-btn active" data-layout="2col" type="button">
-            <span class="icon cols-2"><span></span><span></span></span>2 Columns
-          </button>
+      <!-- ============ QA-ONLY: LAYOUT + THEME ============ -->
+      <div id="qaExtras">
+        <div class="field-group">
+          <label>Layout</label>
+          <div class="layout-group">
+            <button class="layout-btn" data-layout="1col" type="button">
+              <span class="icon cols-1"><span></span></span>1 Column
+            </button>
+            <button class="layout-btn active" data-layout="2col" type="button">
+              <span class="icon cols-2"><span></span><span></span></span>2 Columns
+            </button>
+          </div>
         </div>
-      </div>
 
-      <div class="field-group">
-        <label>Theme</label>
-        <div class="theme-grid" id="themeGrid"></div>
+        <div class="field-group">
+          <label>Theme</label>
+          <div class="theme-grid" id="themeGrid"></div>
+        </div>
       </div>
 
       <div class="status" id="status">—</div>
     </div>
 
+    <!-- RESULT mode sidebar -->
     <div class="sidebar-scroll" id="sidebarResult" hidden>
       <div class="result-sidebar">
         <div class="result-sidebar-icon">✓</div>
         <h3 class="result-sidebar-title" id="resultSidebarTitle">Pages generated</h3>
         <p class="result-sidebar-text">
-          Each page has its own download button on the right.
-          Click <strong>Back to edit</strong> to modify questions.
+          Each image has its own download button. Click <strong>Back to edit</strong> to modify.
         </p>
         <div class="result-sidebar-list" id="resultSidebarList"></div>
       </div>
@@ -111,20 +631,18 @@ Ans: Indira Gandhi (ইন্দিৰা গান্ধী)</textarea>
       <button class="btn btn-primary btn-full" id="previewBtn" type="button">Analyze &amp; Preview images</button>
       <button class="btn btn-secondary btn-full" id="backBtn" type="button" hidden>← Back to edit</button>
     </div>
+
   </aside>
 
+  <!-- ==================== PREVIEW ==================== -->
   <section class="preview-panel">
+
     <div class="preview-edit" id="previewEdit">
       <div class="preview-toolbar">
-        <h2>Live preview <span style="font-weight:500;font-size:11px;color:#999">(approximate)</span></h2>
-        <div class="pager" id="pager" hidden>
-          <button class="pager-btn" id="pagerPrev" type="button">‹</button>
-          <span class="pager-label" id="pagerLabel">1 / 1</span>
-          <button class="pager-btn" id="pagerNext" type="button">›</button>
-        </div>
+        <h2>Live preview <small>(approximate)</small></h2>
       </div>
       <div class="preview-stage">
-        <div class="poster" id="poster" data-theme="cream"></div>
+        <div id="livePreviewHolder" style="width:100%;max-width:540px"></div>
       </div>
     </div>
 
@@ -138,6 +656,7 @@ Ans: Indira Gandhi (ইন্দিৰা গান্ধী)</textarea>
       </div>
       <div class="result-grid" id="resultGrid"></div>
     </div>
+
   </section>
 
 </main>
@@ -145,7 +664,7 @@ Ans: Indira Gandhi (ইন্দিৰা গান্ধী)</textarea>
 <div class="export-overlay" id="exportOverlay" hidden>
   <div class="export-loader">
     <div class="loader-spinner"></div>
-    <h3>Analyzing content</h3>
+    <h3 id="exportTitle">Analyzing content</h3>
     <p id="exportProgressText">Fitting questions to pages...</p>
     <div class="progress-track"><div class="progress-bar" id="exportProgressBar"></div></div>
   </div>
@@ -164,8 +683,9 @@ Ans: Indira Gandhi (ইন্দিৰা গান্ধী)</textarea>
   const LAYOUT_KEY = "pk_qa_layout";
   const RATIO_KEY  = "pk_qa_ratio";
   const THEME_KEY  = "pk_qa_theme";
-  const PREVIEW_ROUGH_PER_PAGE = 10;
-  const EXPORT_SCALE = 4;
+  const FORMAT_KEY = "pk_format";
+  const EXPORT_SCALE_QA  = 4;   // 540 → 2160 (4K)
+  const EXPORT_SCALE_MCQ = 2;   // 1080 → 2160 (4K)
   const LOCKED_QR_URL = "https://chat.whatsapp.com/DLrcA98MrlYKOeZ5DMeN5Z";
 
   const THEMES = [
@@ -181,14 +701,23 @@ Ans: Indira Gandhi (ইন্দিৰা গান্ধী)</textarea>
     { id:'peach',    name:'Peach',    bg:'linear-gradient(135deg,#fff6f0 0%,#ffe9d8 100%)' }
   ];
 
+  // Exact pixel dimensions for every ratio
+  const RATIOS = {
+    '1:1':  { w: 1080, h: 1080, mcqClass: 'r11'  },
+    '3:4':  { w: 1080, h: 1440, mcqClass: 'r34'  },
+    '4:5':  { w: 1080, h: 1350, mcqClass: 'r45'  },
+    '9:16': { w: 1080, h: 1920, mcqClass: 'r916' }
+  };
+
   const state = {
-    mode: "edit",
-    ratio: "3:4",
-    layout: "2col",
-    theme: "cream",
-    currentPage: 0,
+    format: 'qa',
+    mode: 'edit',
+    ratio: '4:5',
+    layout: '2col',
+    theme: 'cream',
     items: [],
     pages: [],
+    mcqs: [],
     previewBase: ID_START,
     downloadedPages: new Set(),
     id: { month: new Date().getMonth() + 1, base: ID_START }
@@ -196,7 +725,7 @@ Ans: Indira Gandhi (ইন্দিৰা গান্ধী)</textarea>
   let isExporting = false;
   let analyzeToken = 0;
 
-  /* ----- ID ----- */
+  /* ---------- ID ---------- */
   function initId() {
     const now = new Date().getMonth() + 1;
     let m = parseInt(localStorage.getItem(ID_MONTH_KEY) || "0", 10);
@@ -212,25 +741,65 @@ Ans: Indira Gandhi (ইন্দিৰা গান্ধী)</textarea>
     state.id.base = base;
     localStorage.setItem(ID_KEY, String(base));
   }
-  function getIdForPage(pageIndex) {
-    const n = state.previewBase + pageIndex;
+  function getIdForIndex(i) {
+    const n = state.previewBase + i;
     return "PR/" + String(state.id.month).padStart(2,"0") + "/" + String(n).padStart(4,"0");
   }
 
-  /* ----- Prefs ----- */
+  /* ---------- Prefs ---------- */
   function loadPrefs() {
+    const sf = localStorage.getItem(FORMAT_KEY);
+    if (sf === "qa" || sf === "mcq") state.format = sf;
     const sl = localStorage.getItem(LAYOUT_KEY);
     if (sl === "1col" || sl === "2col") state.layout = sl;
     const sr = localStorage.getItem(RATIO_KEY);
-    if (sr === "1:1" || sr === "3:4" || sr === "4:5" || sr === "9:16") state.ratio = sr;
+    if (sr && RATIOS[sr]) state.ratio = sr;
     const st = localStorage.getItem(THEME_KEY);
     if (st && THEMES.some(t => t.id === st)) state.theme = st;
   }
-  function saveLayout(v){ state.layout = v; localStorage.setItem(LAYOUT_KEY, v); }
-  function saveRatio(v){ state.ratio = v; localStorage.setItem(RATIO_KEY, v); }
-  function saveTheme(v){ state.theme = v; localStorage.setItem(THEME_KEY, v); }
+  function savePref(k, v) { localStorage.setItem(k, v); }
 
-  /* ----- Parser ----- */
+  /* ---------- Utils ---------- */
+  function escapeHTML(s) {
+    return String(s ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;")
+      .replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+  }
+  function waitFrame() {
+    return new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+  }
+  function fontsReady() {
+    return new Promise(async resolve => {
+      try {
+        await Promise.all([
+          document.fonts.load('700 16px Roboto'),
+          document.fonts.load('600 16px Roboto'),
+          document.fonts.load('700 16px Inter'),
+          document.fonts.load('600 16px Inter'),
+          document.fonts.load('700 16px "Noto Sans Assamese"'),
+          document.fonts.load('600 16px "Noto Sans Assamese"')
+        ]);
+        await document.fonts.ready;
+      } catch (_) {}
+      resolve();
+    });
+  }
+
+  /* ---------- QR ---------- */
+  function renderQR(container) {
+    if (!container || !window.QRCode) return;
+    container.innerHTML = "";
+    try {
+      new QRCode(container, {
+        text: LOCKED_QR_URL, width: 224, height: 224,
+        colorDark: "#000000", colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.M
+      });
+    } catch (e) { console.warn("QR error:", e); }
+  }
+
+  /* ============================================================
+     QA PARSER + PAGINATION (unchanged behavior)
+  ============================================================ */
   function splitInline(text) {
     const t = (text || "").trim();
     if (!t) return { en: "", as: "" };
@@ -261,32 +830,48 @@ Ans: Indira Gandhi (ইন্দিৰা গান্ধী)</textarea>
     if (cur && cur.ansEn !== undefined) items.push(cur);
     return items;
   }
-  function paginate(items, per) {
+  function paginateRough(items, per) {
     const pages = [];
     for (let i = 0; i < items.length; i += per) pages.push(items.slice(i, i + per));
     return pages;
   }
-  function escapeHTML(s) {
-    return String(s ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;")
-      .replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
-  }
 
-  /* ----- QR ----- */
-  function renderQR(container) {
-    if (!container || !window.QRCode) return;
-    container.innerHTML = "";
-    try {
-      new QRCode(container, {
-        text: LOCKED_QR_URL,
-        width: 224, height: 224,
-        colorDark: "#000000", colorLight: "#ffffff",
-        correctLevel: QRCode.CorrectLevel.M
+  /* ============================================================
+     MCQ PARSER
+  ============================================================ */
+  function parseMCQs(text) {
+    const blocks = text.split(/\n\s*---\s*\n/);
+    return blocks.map(block => {
+      const d = {};
+      block.split(/\r?\n/).forEach(line => {
+        const m = line.match(/^([A-Za-z][A-Za-z\-]*)\s*:\s*(.*)$/);
+        if (m) {
+          const key = m[1].toUpperCase();
+          let val = m[2].trim();
+          // Support multiline: if line ends with continuation, keep going
+          d[key] = val;
+        }
       });
-    } catch (e) { console.warn("QR render error:", e); }
+      return {
+        subject: d.SUBJECT || 'Subject',
+        set: d.SET || '',
+        qEn: d['Q-EN'] || '',
+        qAs: d['Q-AS'] || '',
+        aEn: d['A-EN'] || '', aAs: d['A-AS'] || '',
+        bEn: d['B-EN'] || '', bAs: d['B-AS'] || '',
+        cEn: d['C-EN'] || '', cAs: d['C-AS'] || '',
+        dEn: d['D-EN'] || '', dAs: d['D-AS'] || '',
+        ans: (d.ANS || '').toUpperCase().trim(),
+        expEn: d['EXP-EN'] || d['EXPLANATION-EN'] || '',
+        expAs: d['EXP-AS'] || d['EXPLANATION-AS'] || ''
+      };
+    }).filter(x => x.qEn || x.qAs);
   }
 
-  /* ----- Builders ----- */
-  function buildBlockHTML(item) {
+  /* ============================================================
+     QA BUILDERS
+  ============================================================ */
+  function buildQABlockHTML(item) {
     const qParts = [];
     if (item.qEn) qParts.push(`<span class="qa-en">${escapeHTML(item.qEn)}</span>`);
     if (item.qAs) qParts.push(`<span class="qa-as">(${escapeHTML(item.qAs)})</span>`);
@@ -297,38 +882,32 @@ Ans: Indira Gandhi (ইন্দিৰা গান্ধী)</textarea>
     if (!aParts.length) aParts.push(`<span class="qa-en">—</span>`);
     return `
       <div class="qa-item">
-        <div class="qa-line qa-q">
-          <span class="qa-lbl">Q</span>
-          <div class="qa-content">${qParts.join(" ")}</div>
-        </div>
-        <div class="qa-line">
-          <span class="qa-lbl qa-lbl-a">Ans</span>
-          <div class="qa-content">${aParts.join(" ")}</div>
-        </div>
+        <div class="qa-line qa-q"><span class="qa-lbl">Q</span>
+          <div class="qa-content">${qParts.join(" ")}</div></div>
+        <div class="qa-line"><span class="qa-lbl qa-lbl-a">Ans</span>
+          <div class="qa-content">${aParts.join(" ")}</div></div>
       </div>`;
   }
-  function buildBodyHTML(items) {
+  function buildQABodyHTML(items) {
     if (state.layout === "2col" && items.length > 1) {
       const half = Math.ceil(items.length / 2);
-      const left = items.slice(0, half);
-      const right = items.slice(half);
       return `<div class="qa-2col">
-        <div class="qa-col">${left.map(buildBlockHTML).join("")}</div>
-        <div class="qa-col">${right.map(buildBlockHTML).join("")}</div>
+        <div class="qa-col">${items.slice(0, half).map(buildQABlockHTML).join("")}</div>
+        <div class="qa-col">${items.slice(half).map(buildQABlockHTML).join("")}</div>
       </div>`;
     }
-    return `<div class="qa-1col">${items.map(buildBlockHTML).join("")}</div>`;
+    return `<div class="qa-1col">${items.map(buildQABlockHTML).join("")}</div>`;
   }
-  function buildPageHTML(items, pageIndex, totalPages) {
+  function buildQAPageHTML(items, pageIndex, totalPages) {
     const subject = $("subject").value.trim();
-    const id = getIdForPage(pageIndex);
+    const id = getIdForIndex(pageIndex);
     return `
       <header class="poster-header">
         <div class="ph-brand">preparekora<span class="ph-domain">.in</span></div>
         <div class="ph-subject">${escapeHTML(subject || "Subject")}</div>
         <div class="ph-id">${escapeHTML(id)}</div>
       </header>
-      <section class="poster-body"><div class="poster-body-inner">${buildBodyHTML(items)}</div></section>
+      <section class="poster-body"><div class="poster-body-inner">${buildQABodyHTML(items)}</div></section>
       <footer class="poster-footer">
         <span class="pf-brand">preparekora.in</span>
         <span class="pf-page">${pageIndex + 1} / ${totalPages}</span>
@@ -336,20 +915,95 @@ Ans: Indira Gandhi (ইন্দিৰা গান্ধী)</textarea>
       </footer>`;
   }
 
-  /* ----- UI state ----- */
-  function applyRatio(ratio) {
-    const [wr, hr] = ratio.split(":").map(Number);
-    $("poster").style.setProperty("--aspect-ratio", `${wr} / ${hr}`);
+  /* ============================================================
+     MCQ BUILDERS (exact explanation layout)
+  ============================================================ */
+  function buildMCQFrameHTML(mcq, index, total) {
+    const ratio = RATIOS[state.ratio];
+    const cls = ratio.mcqClass;
+    const correct = (letter) => (mcq.ans === letter ? " is-correct" : "");
+
+    const opt = (letter, en, as) => `
+      <li class="opt${correct(letter)}">
+        <span class="key">${letter}</span>
+        <span class="txt">
+          <span class="en">${escapeHTML(en)}</span>
+          ${as ? `<span class="as">${escapeHTML(as)}</span>` : ""}
+        </span>
+        <span class="tick">✓</span>
+      </li>`;
+
+    const showRule = mcq.expEn && mcq.expAs;
+
+    return `
+      <div class="topbar">
+        <span class="pill">${escapeHTML(mcq.subject || "Subject")}</span>
+        <span class="pill dark">Answer Key</span>
+      </div>
+
+      <div class="q">
+        <div class="q-label">Question</div>
+        ${mcq.qEn ? `<div class="q-en">${escapeHTML(mcq.qEn)}</div>` : ""}
+        ${mcq.qAs ? `<div class="q-as">${escapeHTML(mcq.qAs)}</div>` : ""}
+      </div>
+
+      <ul class="opts">
+        ${opt('A', mcq.aEn, mcq.aAs)}
+        ${opt('B', mcq.bEn, mcq.bAs)}
+        ${opt('C', mcq.cEn, mcq.cAs)}
+        ${opt('D', mcq.dEn, mcq.dAs)}
+      </ul>
+
+      <section class="explain">
+        <div class="ex-head">Explanation <span class="as-head">ব্যাখ্যা</span></div>
+        ${mcq.expEn ? `<p class="ex-en">${escapeHTML(mcq.expEn)}</p>` : ""}
+        ${showRule ? `<div class="rule"></div>` : ""}
+        ${mcq.expAs ? `<p class="ex-as">${escapeHTML(mcq.expAs)}</p>` : ""}
+      </section>
+
+      <div class="foot">
+        <span class="set">${escapeHTML(mcq.set || "")}</span>
+        <span>${escapeHTML(mcq.subject || "")}</span>
+      </div>
+    `;
+  }
+  function makeMCQFrameElement(mcq, index, total, forExport) {
+    const ratio = RATIOS[state.ratio];
+    const cls = ratio.mcqClass;
+    const frame = document.createElement("div");
+    frame.className = `mcq-frame ${cls}`;
+    frame.dataset.h = ratio.h;
+    if (forExport) {
+      frame.style.setProperty("--z", "1");
+      frame.style.position = "static";
+      frame.style.transform = "none";
+    }
+    frame.innerHTML = buildMCQFrameHTML(mcq, index, total);
+    return frame;
+  }
+
+  /* ============================================================
+     APPLY UI STATE
+  ============================================================ */
+  function applyFormatUI() {
+    document.querySelectorAll(".format-tab").forEach(t =>
+      t.classList.toggle("active", t.dataset.format === state.format));
+    $("qaInputs").hidden = state.format !== "qa";
+    $("mcqInputs").hidden = state.format !== "mcq";
+    $("qaExtras").hidden = state.format !== "qa";
+    $("previewBtn").textContent = "Analyze & Preview images";
+  }
+  function applyRatioUI() {
     document.querySelectorAll(".ratio-btn").forEach(b =>
-      b.classList.toggle("active", b.dataset.ratio === ratio));
+      b.classList.toggle("active", b.dataset.ratio === state.ratio));
   }
-  function applyLayoutUI(layout) {
+  function applyLayoutUI() {
     document.querySelectorAll(".layout-btn").forEach(b =>
-      b.classList.toggle("active", b.dataset.layout === layout));
+      b.classList.toggle("active", b.dataset.layout === state.layout));
   }
-  function applyThemeUI(theme) {
+  function applyThemeUI() {
     document.querySelectorAll(".theme-swatch").forEach(b =>
-      b.classList.toggle("active", b.dataset.theme === theme));
+      b.classList.toggle("active", b.dataset.theme === state.theme));
   }
   function renderThemeGrid() {
     const grid = $("themeGrid");
@@ -362,107 +1016,113 @@ Ans: Indira Gandhi (ইন্দিৰা গান্ধী)</textarea>
       btn.title = t.name;
       btn.style.background = t.bg;
       btn.addEventListener("click", () => {
-        saveTheme(t.id);
-        applyThemeUI(t.id);
-        $("poster").setAttribute("data-theme", t.id);
+        state.theme = t.id; savePref(THEME_KEY, t.id);
+        applyThemeUI(); renderLive();
       });
       grid.appendChild(btn);
     });
   }
 
-  /* ----- Edit preview (rough) ----- */
-  function updateStatus() {
-    const total = state.items.length;
-    const pages = Math.max(state.pages.length, 1);
-    const el = $("status");
-    if (!total) { el.textContent = "No Q&A detected — paste in the textarea above."; return; }
-    const layoutLabel = state.layout === "2col" ? "2 columns" : "1 column";
-    const themeObj = THEMES.find(t => t.id === state.theme);
-    el.innerHTML =
-      `<strong>${total}</strong> Q&amp;A · <strong>${pages}</strong> page${pages>1?"s":""} (approx)<br>` +
-      `${layoutLabel} · ${themeObj?themeObj.name:""}` +
-      `<br><span style="color:#888;font-size:11px">Click Preview for accurate fit analysis</span>`;
-  }
-  function updatePager(totalPages) {
-    const pager = $("pager");
-    if (totalPages <= 1) { pager.hidden = true; return; }
-    pager.hidden = false;
-    $("pagerLabel").textContent = `${state.currentPage + 1} / ${totalPages}`;
-    $("pagerPrev").disabled = state.currentPage === 0;
-    $("pagerNext").disabled = state.currentPage === totalPages - 1;
-  }
-  function renderPreview() {
+  /* ============================================================
+     LIVE PREVIEW (edit mode)
+  ============================================================ */
+  function renderLive() {
     if (state.mode !== "edit") return;
-    state.items = parseQA($("input").value);
-    state.pages = paginate(state.items, PREVIEW_ROUGH_PER_PAGE);
-    const totalPages = Math.max(state.pages.length, 1);
-    if (state.currentPage >= totalPages) state.currentPage = totalPages - 1;
+    const holder = $("livePreviewHolder");
+    holder.innerHTML = "";
 
-    const poster = $("poster");
-    poster.setAttribute("data-theme", state.theme);
-
-    if (!state.items.length) {
-      poster.innerHTML = `
-        <header class="poster-header">
-          <div class="ph-brand">preparekora<span class="ph-domain">.in</span></div>
-          <div class="ph-subject">${escapeHTML($("subject").value.trim()) || "Subject"}</div>
-          <div class="ph-id">${escapeHTML(getIdForPage(0))}</div>
-        </header>
-        <section class="poster-body"><div class="poster-body-inner">
-          <div class="empty-state">Paste Q&amp;A to see preview</div>
-        </div></section>
-        <footer class="poster-footer">
-          <span class="pf-brand">preparekora.in</span>
-          <span class="pf-page">1 / 1</span>
-          <div class="pf-qr"></div>
-        </footer>`;
+    if (state.format === "qa") {
+      const items = parseQA($("input").value);
+      const pages = paginateRough(items, 10);
+      const totalPages = Math.max(pages.length, 1);
+      const poster = document.createElement("div");
+      poster.className = "poster";
+      poster.setAttribute("data-theme", state.theme);
+      poster.style.setProperty("--aspect-ratio",
+        state.ratio.replace(":", "/"));
+      if (!items.length) {
+        poster.innerHTML = buildQAPageHTML([], 0, 1);
+        poster.innerHTML = poster.innerHTML.replace(/<section class="poster-body">[\s\S]*?<\/section>/,
+          `<section class="poster-body"><div class="poster-body-inner">
+            <div class="empty-state">Paste Q&amp;A to see preview</div></div></section>`);
+      } else {
+        poster.innerHTML = buildQAPageHTML(pages[0], 0, totalPages);
+      }
+      holder.appendChild(poster);
+      renderQR(poster.querySelector(".pf-qr"));
+      $("status").innerHTML =
+        `<strong>${items.length}</strong> Q&amp;A · <strong>${totalPages}</strong> page${totalPages>1?"s":""} (approx)<br>` +
+        `<span style="color:#888;font-size:11px">Click Preview for accurate fit</span>`;
     } else {
-      poster.innerHTML = buildPageHTML(state.pages[state.currentPage], state.currentPage, totalPages);
+      const mcqs = parseMCQs($("mcqInput").value);
+      const ratio = RATIOS[state.ratio];
+      if (!mcqs.length) {
+        const emptyFrame = document.createElement("div");
+        emptyFrame.className = "mcq-frame " + ratio.mcqClass;
+        emptyFrame.innerHTML = `<div style="padding:40px;text-align:center;color:#999;
+          font-family:'Inter'">Paste MCQ blocks separated by --- to see preview</div>`;
+        const vp = document.createElement("div");
+        vp.className = "mcq-viewport";
+        vp.style.aspectRatio = ratio.w + "/" + ratio.h;
+        emptyFrame.style.position = "absolute";
+        emptyFrame.style.top = "0"; emptyFrame.style.left = "0";
+        vp.appendChild(emptyFrame);
+        holder.appendChild(vp);
+        scaleMCQViewport(vp, emptyFrame);
+        $("status").innerHTML = `No MCQ blocks found. Separate each with <code>---</code>.`;
+        return;
+      }
+      const mcq = mcqs[0];
+      const frame = makeMCQFrameElement(mcq, 0, mcqs.length, false);
+      const vp = document.createElement("div");
+      vp.className = "mcq-viewport";
+      vp.style.aspectRatio = ratio.w + "/" + ratio.h;
+      frame.style.position = "absolute";
+      frame.style.top = "0"; frame.style.left = "0";
+      vp.appendChild(frame);
+      holder.appendChild(vp);
+      scaleMCQViewport(vp, frame);
+      $("status").innerHTML =
+        `<strong>${mcqs.length}</strong> MCQ${mcqs.length>1?"s":""} · <strong>${mcqs.length}</strong> image${mcqs.length>1?"s":""}<br>` +
+        `<span style="color:#888;font-size:11px">One MCQ = one image</span>`;
     }
-    renderQR(poster.querySelector(".pf-qr"));
-    updateStatus();
-    updatePager(totalPages);
   }
+
+  // Scale an MCQ viewport so the 1080-wide frame fits container
+  function scaleMCQViewport(viewport, frame) {
+    const containerW = viewport.clientWidth;
+    if (containerW < 1) return;
+    const scale = containerW / 1080;
+    frame.style.setProperty("--z", scale);
+    viewport.style.height = (parseInt(frame.dataset.h) * scale) + "px";
+  }
+
+  // Observe container width, rescale MCQ frames on resize
+  const resizeObserver = new ResizeObserver(entries => {
+    entries.forEach(entry => {
+      const vp = entry.target;
+      const frame = vp.querySelector(".mcq-frame");
+      if (frame && !frame.dataset.export) {
+        scaleMCQViewport(vp, frame);
+      }
+      // QA poster: let CSS max-width handle it, but log nothing
+    });
+  });
 
   /* ============================================================
-     INTELLIGENT PAGINATION
-     - Measures actual rendered fit
-     - Balanced distribution across pages
-     - No fixed 10/page
+     INTELLIGENT QA PAGINATION
   ============================================================ */
-  function waitFrame() {
-    return new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
-  }
-  function fontsReady() {
-    return new Promise(async resolve => {
-      try {
-        await Promise.all([
-          document.fonts.load('700 16px Roboto'),
-          document.fonts.load('600 16px Roboto'),
-          document.fonts.load('400 16px Roboto'),
-          document.fonts.load('700 16px "Noto Sans Assamese"'),
-          document.fonts.load('600 16px "Noto Sans Assamese"'),
-          document.fonts.load('400 16px "Noto Sans Assamese"')
-        ]);
-        await document.fonts.ready;
-      } catch (_) {}
-      resolve();
-    });
-  }
-
-  async function computePages(items) {
+  async function computeQAPages(items) {
     if (!items.length) return [];
+    const ratio = RATIOS[state.ratio];
+    const posterH = Math.round(540 * ratio.h / ratio.w);
 
-    const [wr, hr] = state.ratio.split(":").map(Number);
-    const posterH = Math.round(540 * hr / wr);
-
-    // Offscreen measurement container — real poster structure
     const measure = document.createElement("div");
     measure.className = "poster";
     measure.setAttribute("data-theme", state.theme);
     measure.style.cssText = `position:fixed;left:-99999px;top:0;
-      width:540px;height:${posterH}px;pointer-events:none;visibility:hidden`;
-    measure.style.setProperty("--aspect-ratio", `${wr}/${hr}`);
+      width:540px;height:${posterH}px;visibility:hidden;pointer-events:none`;
+    measure.style.setProperty("--aspect-ratio", `${ratio.w}/${ratio.h}`);
     measure.innerHTML = `
       <header class="poster-header">
         <div class="ph-brand">preparekora<span class="ph-domain">.in</span></div>
@@ -472,7 +1132,7 @@ Ans: Indira Gandhi (ইন্দিৰা গান্ধী)</textarea>
       <section class="poster-body"><div class="poster-body-inner"></div></section>
       <footer class="poster-footer">
         <span class="pf-brand">preparekora.in</span>
-        <span class="pf-page">1 / 1</span>
+        <span class="pf-page">1/1</span>
         <div class="pf-qr" style="width:48px;height:48px"></div>
       </footer>`;
     document.body.appendChild(measure);
@@ -480,59 +1140,52 @@ Ans: Indira Gandhi (ইন্দিৰা গান্ধী)</textarea>
 
     const body = measure.querySelector(".poster-body");
     const inner = measure.querySelector(".poster-body-inner");
-
-    function fits(subset) {
-      inner.innerHTML = buildBodyHTML(subset);
+    const fits = (subset) => {
+      inner.innerHTML = buildQABodyHTML(subset);
       void inner.offsetHeight;
       return body.scrollHeight <= body.clientHeight + 1;
-    }
+    };
 
-    // --- Phase 1: Greedy → determines minimum pages needed ---
     const greedy = [];
-    let idx = 0;
-    while (idx < items.length) {
+    let i = 0;
+    while (i < items.length) {
       let n = 1;
-      while (idx + n <= items.length && fits(items.slice(idx, idx + n))) n++;
+      while (i + n <= items.length && fits(items.slice(i, i + n))) n++;
       n--;
       if (n < 1) n = 1;
-      greedy.push(items.slice(idx, idx + n));
-      idx += n;
+      greedy.push(items.slice(i, i + n));
+      i += n;
     }
-    const minPages = greedy.length;
-    let result = greedy;
 
-    // --- Phase 2: Balance across minPages ---
-    if (minPages > 1) {
+    let result = greedy;
+    if (greedy.length > 1) {
       const balanced = [];
-      let start = 0;
-      while (start < items.length) {
-        const pagesLeft = minPages - balanced.length;
-        const remain = items.length - start;
-        const target = Math.ceil(remain / Math.max(1, pagesLeft));
+      let s = 0;
+      while (s < items.length) {
+        const left = greedy.length - balanced.length;
+        const remain = items.length - s;
+        const target = Math.ceil(remain / Math.max(1, left));
         let n = target;
-        while (n > 1 && !fits(items.slice(start, start + n))) n--;
+        while (n > 1 && !fits(items.slice(s, s + n))) n--;
         if (n < 1) n = 1;
-        balanced.push(items.slice(start, start + n));
-        start += n;
+        balanced.push(items.slice(s, s + n));
+        s += n;
       }
-      // Use balanced only if it didn't add extra pages
-      if (balanced.length <= minPages) result = balanced;
+      if (balanced.length <= greedy.length) result = balanced;
     }
 
     measure.remove();
     return result;
   }
 
-  /* ----- Enter / Exit preview ----- */
+  /* ============================================================
+     ENTER / EXIT PREVIEW MODE
+  ============================================================ */
   async function enterPreviewMode() {
-    const items = parseQA($("input").value);
-    if (!items.length) { alert("Please paste at least one Q&A pair."); return; }
-
     const token = ++analyzeToken;
-
-    // Show overlay
     $("exportOverlay").hidden = false;
-    $("exportProgressText").textContent = "Analyzing content fit...";
+    $("exportTitle").textContent = "Analyzing content";
+    $("exportProgressText").textContent = "Fitting content to pages...";
     $("exportProgressBar").style.width = "20%";
     $("previewBtn").disabled = true;
     $("previewBtn").textContent = "Analyzing…";
@@ -541,18 +1194,26 @@ Ans: Indira Gandhi (ইন্দিৰা গান্ধী)</textarea>
       await fontsReady();
       $("exportProgressBar").style.width = "50%";
 
-      const pages = await computePages(items);
-      if (token !== analyzeToken) return;
-
+      if (state.format === "qa") {
+        const items = parseQA($("input").value);
+        if (!items.length) { alert("Please paste at least one Q&A."); return; }
+        const pages = await computeQAPages(items);
+        if (token !== analyzeToken) return;
+        state.items = items;
+        state.pages = pages;
+        state.mcqs = [];
+      } else {
+        const mcqs = parseMCQs($("mcqInput").value);
+        if (!mcqs.length) { alert("Please paste at least one MCQ block (separate with ---)."); return; }
+        state.mcqs = mcqs;
+        state.pages = mcqs.map(m => [m]);
+        state.items = [];
+      }
       $("exportProgressBar").style.width = "100%";
       await waitFrame();
 
-      // Commit
-      state.items = items;
-      state.pages = pages;
       state.previewBase = state.id.base;
       state.downloadedPages = new Set();
-      state.currentPage = 0;
       state.mode = "result";
 
       $("sidebarInputs").hidden = true;
@@ -567,7 +1228,7 @@ Ans: Indira Gandhi (ইন্দিৰা গান্ধী)</textarea>
       renderResultView();
     } catch (err) {
       console.error(err);
-      alert("Analysis failed. Please try again.");
+      alert("Analysis failed: " + err.message);
       $("previewBtn").disabled = false;
       $("previewBtn").textContent = "Analyze & Preview images";
     } finally {
@@ -577,7 +1238,8 @@ Ans: Indira Gandhi (ইন্দিৰা গান্ধী)</textarea>
 
   function exitPreviewMode() {
     if (state.downloadedPages.size > 0) {
-      saveIdBase(state.previewBase + state.pages.length);
+      const pageCount = state.format === "qa" ? state.pages.length : state.mcqs.length;
+      saveIdBase(state.previewBase + pageCount);
     }
     state.mode = "edit";
     state.downloadedPages = new Set();
@@ -588,79 +1250,114 @@ Ans: Indira Gandhi (ইন্দিৰা গান্ধী)</textarea>
     $("backBtn").hidden = true;
     $("previewEdit").hidden = false;
     $("previewResult").hidden = true;
-    renderPreview();
+    renderLive();
   }
 
-  /* ----- Result view ----- */
+  /* ============================================================
+     RESULT VIEW
+  ============================================================ */
   function renderResultView() {
-    const totalPages = state.pages.length;
-    const [wr, hr] = state.ratio.split(":").map(Number);
-    const aspect = `${wr} / ${hr}`;
+    const total = state.format === "qa" ? state.pages.length : state.mcqs.length;
+    const ratio = RATIOS[state.ratio];
 
-    $("resultCount").textContent = `${totalPages} page${totalPages > 1 ? "s" : ""} · ${state.items.length} questions`;
-    $("resultSidebarTitle").textContent = `${totalPages} page${totalPages > 1 ? "s" : ""} generated`;
+    $("resultCount").textContent = `${total} image${total > 1 ? "s" : ""} generated`;
+    $("resultSidebarTitle").textContent = `${total} image${total > 1 ? "s" : ""} generated`;
 
-    // Breakdown text
-    const breakdown = state.pages.map((p, i) => `P${i+1}: ${p.length}`).join("  ·  ");
-    $("resultBreakdown").textContent = breakdown;
+    if (state.format === "qa") {
+      $("resultBreakdown").textContent =
+        state.pages.map((p, i) => `P${i+1}: ${p.length} Q`).join("  ·  ");
+    } else {
+      $("resultBreakdown").textContent = `${state.mcqs.length} MCQs · 1 per image`;
+    }
     updateBadge();
 
     // Sidebar list
-    const sidebarList = $("resultSidebarList");
-    sidebarList.innerHTML = "";
-    for (let i = 0; i < totalPages; i++) {
+    const list = $("resultSidebarList");
+    list.innerHTML = "";
+    for (let i = 0; i < total; i++) {
       const row = document.createElement("div");
       row.className = "result-sidebar-item";
       row.dataset.page = i;
+      const countLabel = state.format === "qa"
+        ? `${state.pages[i].length} Q`
+        : 'MCQ';
       row.innerHTML = `
-        <span class="rsi-page">Page ${i + 1}</span>
-        <span class="rsi-count">${state.pages[i].length} Q</span>
-        <span class="rsi-id">${escapeHTML(getIdForPage(i))}</span>`;
-      sidebarList.appendChild(row);
+        <span class="rsi-page">Image ${i + 1}</span>
+        <span class="rsi-count">${countLabel}</span>
+        <span class="rsi-id">${escapeHTML(getIdForIndex(i))}</span>`;
+      list.appendChild(row);
     }
 
     // Grid
     const grid = $("resultGrid");
     grid.innerHTML = "";
-    for (let i = 0; i < totalPages; i++) {
-      const id = getIdForPage(i);
+    for (let i = 0; i < total; i++) {
       const card = document.createElement("div");
       card.className = "result-card";
       card.dataset.page = i;
 
       const preview = document.createElement("div");
       preview.className = "result-preview";
-      preview.style.aspectRatio = aspect;
-      preview.innerHTML = `
-        <div class="poster" data-theme="${state.theme}" style="aspect-ratio:${aspect}">
-          ${buildPageHTML(state.pages[i], i, totalPages)}
-        </div>`;
-      card.appendChild(preview);
+
+      if (state.format === "qa") {
+        preview.style.aspectRatio = ratio.w + "/" + ratio.h;
+        const pv = document.createElement("div");
+        pv.className = "poster-viewport";
+        pv.style.aspectRatio = ratio.w + "/" + ratio.h;
+        const poster = document.createElement("div");
+        poster.className = "poster";
+        poster.setAttribute("data-theme", state.theme);
+        poster.style.setProperty("--aspect-ratio", state.ratio.replace(":", "/"));
+        poster.innerHTML = buildQAPageHTML(state.pages[i], i, total);
+        pv.appendChild(poster);
+        preview.appendChild(pv);
+        card.appendChild(preview);
+        // scale after mount
+        requestAnimationFrame(() => {
+          const z = pv.clientWidth / 540;
+          poster.style.setProperty("--z", z);
+        });
+        renderQR(poster.querySelector(".pf-qr"));
+      } else {
+        preview.style.aspectRatio = ratio.w + "/" + ratio.h;
+        const vp = document.createElement("div");
+        vp.className = "mcq-viewport";
+        vp.style.aspectRatio = ratio.w + "/" + ratio.h;
+        const frame = makeMCQFrameElement(state.mcqs[i], i, total, false);
+        frame.style.position = "absolute";
+        frame.style.top = "0"; frame.style.left = "0";
+        vp.appendChild(frame);
+        preview.appendChild(vp);
+        card.appendChild(preview);
+        requestAnimationFrame(() => scaleMCQViewport(vp, frame));
+      }
 
       const meta = document.createElement("div");
       meta.className = "result-meta";
+      const countLabel = state.format === "qa"
+        ? `${state.pages[i].length} items`
+        : `Q${i+1}`;
       meta.innerHTML = `
         <div class="result-meta-text">
-          <span class="result-meta-page">Page ${i + 1} <span class="rmp-count">· ${state.pages[i].length} items</span></span>
-          <span class="result-meta-id">${escapeHTML(id)}</span>
+          <span class="result-meta-page">Image ${i + 1} <span class="rmp-count">· ${countLabel}</span></span>
+          <span class="result-meta-id">${escapeHTML(getIdForIndex(i))}</span>
         </div>
         <button class="btn-download" data-page="${i}" type="button">Download</button>`;
       card.appendChild(meta);
 
       grid.appendChild(card);
-      renderQR(preview.querySelector(".pf-qr"));
-
       const btn = meta.querySelector(".btn-download");
       btn.addEventListener("click", () => downloadPage(i, btn));
+
+      resizeObserver.observe(preview.querySelector(".mcq-viewport") || preview.querySelector(".poster-viewport"));
     }
   }
 
   function updateBadge() {
-    const total = state.pages.length;
-    const done = state.downloadedPages.size;
-    $("resultBadge").textContent = `${done} / ${total} downloaded`;
+    const total = state.format === "qa" ? state.pages.length : state.mcqs.length;
+    $("resultBadge").textContent = `${state.downloadedPages.size} / ${total} downloaded`;
   }
-  function markPageDownloaded(i) {
+  function markDownloaded(i) {
     state.downloadedPages.add(i);
     updateBadge();
     const card = document.querySelector(`.result-card[data-page="${i}"]`);
@@ -673,62 +1370,81 @@ Ans: Indira Gandhi (ইন্দিৰা গান্ধী)</textarea>
     if (row) row.classList.add("done");
   }
 
-  /* ----- Download individual page ----- */
+  /* ============================================================
+     DOWNLOAD ONE PAGE
+  ============================================================ */
   function downloadDataURL(url, name) {
     const a = document.createElement("a");
     a.href = url; a.download = name;
     document.body.appendChild(a); a.click(); a.remove();
   }
-
-  async function downloadPage(pageIndex, btnEl) {
+  async function downloadPage(i, btnEl) {
     if (isExporting) return;
     if (!window.html2canvas) { alert("Export library not loaded."); return; }
 
     isExporting = true;
-    const origLabel = btnEl.textContent;
-    btnEl.disabled = true;
-    btnEl.textContent = "…";
+    const orig = btnEl.textContent;
+    btnEl.disabled = true; btnEl.textContent = "…";
 
-    const id = getIdForPage(pageIndex);
-    const [wr, hr] = state.ratio.split(":").map(Number);
-    const posterH = Math.round(540 * hr / wr);
-
-    const off = document.createElement("div");
-    off.className = "poster";
-    off.setAttribute("data-theme", state.theme);
-    off.style.cssText = `position:fixed;left:-99999px;top:0;
-      width:540px;height:${posterH}px;pointer-events:none;z-index:-1`;
-    off.style.setProperty("--aspect-ratio", `${wr} / ${hr}`);
-    off.innerHTML = buildPageHTML(state.pages[pageIndex], pageIndex, state.pages.length);
-    document.body.appendChild(off);
-    renderQR(off.querySelector(".pf-qr"));
+    const id = getIdForIndex(i);
+    const ratio = RATIOS[state.ratio];
 
     $("exportOverlay").hidden = false;
-    $("exportProgressText").textContent = `Rendering ${id}...`;
+    $("exportTitle").textContent = "Rendering image";
+    $("exportProgressText").textContent = id;
     $("exportProgressBar").style.width = "20%";
 
     await fontsReady();
+
+    // Offscreen render wrapper
+    const off = document.createElement("div");
+    off.style.cssText = "position:fixed;left:-99999px;top:0;pointer-events:none";
+
+    let targetEl;
+    let exportScale;
+
+    if (state.format === "qa") {
+      const posterH = Math.round(540 * ratio.h / ratio.w);
+      const poster = document.createElement("div");
+      poster.className = "poster";
+      poster.setAttribute("data-theme", state.theme);
+      poster.style.cssText = `width:540px;height:${posterH}px;`;
+      poster.style.setProperty("--aspect-ratio", state.ratio.replace(":", "/"));
+      poster.innerHTML = buildQAPageHTML(state.pages[i], i, state.pages.length);
+      off.appendChild(poster);
+      renderQR(poster.querySelector(".pf-qr"));
+      targetEl = poster;
+      exportScale = EXPORT_SCALE_QA;
+    } else {
+      const frame = makeMCQFrameElement(state.mcqs[i], i, state.mcqs.length, true);
+      off.appendChild(frame);
+      targetEl = frame;
+      exportScale = EXPORT_SCALE_MCQ;
+    }
+
+    document.body.appendChild(off);
     await waitFrame();
-    await new Promise(r => setTimeout(r, 150));
+    await new Promise(r => setTimeout(r, 200));
 
     try {
-      const canvas = await html2canvas(off, {
-        scale: EXPORT_SCALE, backgroundColor: "#ffffff",
+      $("exportProgressBar").style.width = "50%";
+      const canvas = await html2canvas(targetEl, {
+        scale: exportScale,
+        backgroundColor: "#ffffff",
         useCORS: true, logging: false, imageTimeout: 0
       });
       $("exportProgressBar").style.width = "90%";
       downloadDataURL(canvas.toDataURL("image/png"),
         "preparekora-" + id.replace(/\//g,"-") + ".png");
       $("exportProgressBar").style.width = "100%";
-      markPageDownloaded(pageIndex);
+      markDownloaded(i);
       btnEl.classList.add("done");
       btnEl.textContent = "Downloaded";
       btnEl.disabled = false;
     } catch (err) {
       console.error(err);
-      alert("Download failed. Please try again.");
-      btnEl.textContent = origLabel;
-      btnEl.disabled = false;
+      alert("Download failed: " + err.message);
+      btnEl.textContent = orig; btnEl.disabled = false;
     } finally {
       off.remove();
       setTimeout(() => { $("exportOverlay").hidden = true; }, 350);
@@ -736,50 +1452,79 @@ Ans: Indira Gandhi (ইন্দিৰা গান্ধী)</textarea>
     }
   }
 
-  /* ----- Events ----- */
+  /* ============================================================
+     EVENTS
+  ============================================================ */
   function bind() {
-    $("input").addEventListener("input", renderPreview);
-    $("subject").addEventListener("input", renderPreview);
+    // Format tabs
+    document.querySelectorAll(".format-tab").forEach(tab => {
+      tab.addEventListener("click", () => {
+        state.format = tab.dataset.format;
+        savePref(FORMAT_KEY, state.format);
+        applyFormatUI();
+        renderLive();
+      });
+    });
 
+    // Input changes
+    $("input").addEventListener("input", renderLive);
+    $("subject").addEventListener("input", renderLive);
+    $("mcqInput").addEventListener("input", renderLive);
+
+    // Ratio
     document.querySelectorAll(".ratio-btn").forEach(b => {
       b.addEventListener("click", () => {
-        saveRatio(b.dataset.ratio);
-        applyRatio(b.dataset.ratio);
-        state.currentPage = 0;
-        renderPreview();
+        state.ratio = b.dataset.ratio;
+        savePref(RATIO_KEY, state.ratio);
+        applyRatioUI();
+        renderLive();
       });
     });
+
+    // Layout (QA only)
     document.querySelectorAll(".layout-btn").forEach(b => {
       b.addEventListener("click", () => {
-        saveLayout(b.dataset.layout);
-        applyLayoutUI(b.dataset.layout);
-        renderPreview();
+        state.layout = b.dataset.layout;
+        savePref(LAYOUT_KEY, state.layout);
+        applyLayoutUI();
+        renderLive();
       });
     });
 
-    $("pagerPrev").addEventListener("click", () => {
-      if (state.currentPage > 0) { state.currentPage--; renderPreview(); }
-    });
-    $("pagerNext").addEventListener("click", () => {
-      if (state.currentPage < state.pages.length - 1) {
-        state.currentPage++; renderPreview();
-      }
-    });
-
+    // Actions
     $("previewBtn").addEventListener("click", enterPreviewMode);
     $("backBtn").addEventListener("click", exitPreviewMode);
+
+    // Window resize — rescale everything
+    window.addEventListener("resize", () => {
+      document.querySelectorAll(".mcq-viewport").forEach(vp => {
+        const frame = vp.querySelector(".mcq-frame");
+        if (frame && !frame.dataset.export) scaleMCQViewport(vp, frame);
+      });
+      document.querySelectorAll(".poster-viewport").forEach(pv => {
+        const poster = pv.querySelector(".poster");
+        if (poster) {
+          const z = pv.clientWidth / 540;
+          poster.style.setProperty("--z", z);
+        }
+      });
+    });
   }
 
+  /* ============================================================
+     INIT
+  ============================================================ */
   function init() {
     initId();
     loadPrefs();
-    applyRatio(state.ratio);
-    applyLayoutUI(state.layout);
+    applyFormatUI();
+    applyRatioUI();
+    applyLayoutUI();
     renderThemeGrid();
-    applyThemeUI(state.theme);
+    applyThemeUI();
     bind();
-    renderPreview();
-    console.log("Q&A Studio ready · intelligent pagination · 4:5 enabled");
+    renderLive();
+    console.log("Studio ready · format:", state.format, "· ratio:", state.ratio);
   }
 
   if (document.readyState === "loading") {

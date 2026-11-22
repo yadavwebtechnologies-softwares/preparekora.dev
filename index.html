@@ -120,18 +120,235 @@
     </section>
   </div>
 </section>
-    <section class="tool" data-tool="mcq-explanation" hidden>
-      <div class="placeholder">MCQ + Explanation module — ported in next step</div>
+<section class="tool" data-tool="mcq-explanation" hidden>
+  <div class="mx-layout">
+    <aside class="mx-sidebar">
+      <div class="mx-sidebar-scroll">
+        <div class="field-group">
+          <label for="mx-input">MCQ + Explanation input</label>
+          <textarea id="mx-input" class="input" spellcheck="false"></textarea>
+          <p class="hint">Separate multiple MCQs with <code>---</code> on its own line. Each block becomes one image.</p>
+          <p class="hint" style="margin-top:6px">Required: <code>Subject</code>, <code>Q-EN</code>, <code>Q-AS</code>, <code>A-EN/AS</code>, <code>B-EN/AS</code>, <code>C-EN/AS</code>, <code>D-EN/AS</code>, <code>Ans</code>, <code>Exp-EN</code>, <code>Exp-AS</code>. Optional: <code>Set</code>.</p>
+        </div>
+        <div class="field-group">
+          <label>Aspect ratio</label>
+          <div class="ratio-group">
+            <button class="ratio-btn" data-ratio="1:1" type="button"><span class="ratio-label">1:1</span><span class="ratio-dim">1080×1080</span></button>
+            <button class="ratio-btn" data-ratio="3:4" type="button"><span class="ratio-label">3:4</span><span class="ratio-dim">1080×1440</span></button>
+            <button class="ratio-btn active" data-ratio="4:5" type="button"><span class="ratio-label">4:5</span><span class="ratio-dim">1080×1350</span></button>
+            <button class="ratio-btn" data-ratio="9:16" type="button"><span class="ratio-label">9:16</span><span class="ratio-dim">1080×1920</span></button>
+          </div>
+        </div>
+        <div class="status" id="mx-status">—</div>
+      </div>
+      <div class="mx-actions">
+        <button class="btn-primary btn-full" id="mx-preview-btn" type="button">Analyze &amp; Preview images</button>
+        <button class="btn-secondary btn-full" id="mx-back-btn" type="button" hidden>← Back to edit</button>
+      </div>
+    </aside>
+    <section class="mx-preview-panel">
+      <div class="mx-preview-edit" id="mx-preview-edit">
+        <div class="preview-toolbar"><h2>Live preview <small>(approximate)</small></h2></div>
+        <div class="preview-stage"><div id="mx-live-holder"></div></div>
+      </div>
+      <div class="mx-preview-result" id="mx-preview-result" hidden>
+        <div class="result-toolbar">
+          <div><h2 id="mx-result-count">Pages generated</h2><p id="mx-result-breakdown">—</p></div>
+          <span class="result-toolbar-badge" id="mx-result-badge">0 / 0 downloaded</span>
+        </div>
+        <div class="result-grid" id="mx-result-grid"></div>
+      </div>
     </section>
-    <section class="tool" data-tool="mcq-studio" hidden>
-      <div class="placeholder">MCQ Studio module — ported in next step</div>
+  </div>
+</section>
+
+<section class="tool" data-tool="mcq-studio" hidden>
+  <div class="ms-layout">
+    <aside class="ms-sidebar">
+      <div class="ms-sidebar-scroll">
+        <div class="field-group">
+          <label for="ms-bulk">Question format</label>
+          <textarea id="ms-bulk" class="input" rows="11" spellcheck="false" placeholder="Subject: Reasoning&#10;&#10;Q: Book is related to Reading in the same way as Food is related to?&#10;&#10;A) Cooking&#10;B) Eating&#10;C) Kitchen&#10;D) Buying&#10;&#10;Ans: B"></textarea>
+          <p class="hint">Include Subject, Q, A, B, C, D and Ans labels.</p>
+        </div>
+        <div class="field-group">
+          <label for="ms-aspect">Aspect ratio</label>
+          <select id="ms-aspect" class="input">
+            <option value="1:1">1:1 — Square</option>
+            <option value="16:9">16:9 — Landscape</option>
+            <option value="9:16">9:16 — Portrait</option>
+            <option value="4:3" selected>4:3 — Landscape</option>
+            <option value="3:4">3:4 — Portrait</option>
+            <option value="custom">Custom size</option>
+          </select>
+        </div>
+        <div class="custom-size-fields" id="ms-custom-fields" hidden>
+          <div class="field-group"><label for="ms-cw">Width (px)</label><input type="number" id="ms-cw" class="input" value="1080" min="100" max="12000"></div>
+          <div class="field-group"><label for="ms-ch">Height (px)</label><input type="number" id="ms-ch" class="input" value="1350" min="100" max="12000"></div>
+        </div>
+        <div class="canvas-info"><span>Canvas dimensions</span><strong id="ms-canvas-dims">1080 × 1350 px</strong><span id="ms-ratio-label">4:3 aspect ratio</span></div>
+        <div class="field-group">
+          <label for="ms-qr">QR destination URL</label>
+          <input type="url" id="ms-qr" class="input" placeholder="https://your-link.com">
+          <p class="hint">Enter the URL people should open after scanning. Leave blank to use the module default from Admin.</p>
+        </div>
+        <div class="workflow-action">
+          <button class="btn-primary btn-full" id="ms-preview-btn" type="button">Preview image</button>
+          <p class="export-note" id="ms-preview-status">Paste your format and select a ratio to continue.</p>
+        </div>
+        <div class="field-group">
+          <label for="ms-resolution">Output resolution</label>
+          <select id="ms-resolution" class="input" disabled>
+            <option value="2">Standard — 2×</option>
+            <option value="4" selected>4K — High resolution</option>
+            <option value="8">8K — Maximum resolution</option>
+          </select>
+        </div>
+        <div class="export-info"><div><span>Output dimensions</span><strong id="ms-export-dims">4320 × 5400 px</strong></div><div><span>Format</span><strong>PNG</strong></div></div>
+        <button class="btn-primary btn-full" id="ms-export-btn" type="button" disabled>Download image</button>
+        <p class="export-note" id="ms-export-status">Complete the preview first.</p>
+      </div>
+    </aside>
+    <section class="ms-preview-panel">
+      <div class="preview-toolbar"><h2>Live preview</h2><div class="preview-size" id="ms-preview-size">1080 × 1350</div></div>
+      <div class="preview-stage">
+        <div class="poster-ms" id="ms-poster">
+          <header class="ms-poster-header">
+            <div class="ms-brand">preparekora<span>.in</span></div>
+            <div class="ms-id" id="ms-id">PK/1.0/MCQS/.../----</div>
+          </header>
+          <section class="ms-poster-content">
+            <div class="ms-question-area">
+              <div class="ms-subject" id="ms-subject">Reasoning</div>
+              <h1 class="ms-question" id="ms-question">Book is related to Reading in the same way as Food is related to?</h1>
+              <div class="ms-options">
+                <div class="ms-option"><span class="ms-opt-letter">A</span><span class="ms-opt-text" id="ms-optA">Cooking</span></div>
+                <div class="ms-option"><span class="ms-opt-letter">B</span><span class="ms-opt-text" id="ms-optB">Eating</span></div>
+                <div class="ms-option"><span class="ms-opt-letter">C</span><span class="ms-opt-text" id="ms-optC">Kitchen</span></div>
+                <div class="ms-option"><span class="ms-opt-letter">D</span><span class="ms-opt-text" id="ms-optD">Buying</span></div>
+              </div>
+              <div class="ms-comments"><span class="ms-comments-title">Comments</span><span class="ms-comments-text">The correct option</span></div>
+            </div>
+          </section>
+          <footer class="ms-poster-footer"><div class="ms-qr-container"><div id="ms-qr-code"></div></div></footer>
+        </div>
+      </div>
+      <div class="preview-footer"><span>preparekora.in</span><span id="ms-aspect-label">4:3</span></div>
     </section>
-    <section class="tool" data-tool="mcq-paper" hidden>
-      <div class="placeholder">MCQ Paper Builder module — ported in next step</div>
-    </section>
-    <section class="tool" data-tool="thumbnail" hidden>
-      <div class="placeholder">Thumbnail Maker module — ported in next step</div>
-    </section>
+  </div>
+</section>
+
+<section class="tool" data-tool="mcq-paper" hidden>
+  <div class="mp-wrap">
+    <div class="mp-form panel-inner">
+      <div class="mp-header-row">
+        <label style="margin:0">MCQ Paper Builder</label>
+        <span class="mp-ratio">A4 PDF · Official MT ID</span>
+      </div>
+      <div class="form-grid">
+        <label>Subject
+          <select id="mp-subject">
+            <option value="">— Select subject —</option>
+            <option value="Mathematics">Mathematics</option>
+            <option value="Reasoning">Reasoning</option>
+            <option value="General Knowledge">General Knowledge (GK)</option>
+            <option value="History">History</option>
+            <option value="Geography">Geography</option>
+            <option value="Current Affairs">Current Affairs</option>
+            <option value="Computer">Computer</option>
+            <option value="Custom">Custom</option>
+          </select>
+        </label>
+        <label id="mp-custom-wrap" hidden>Custom Subject<input id="mp-custom-subject" type="text"></label>
+        <label class="full">Test Title <span class="opt">(optional — auto if blank)</span><input id="mp-title" type="text"></label>
+        <label>Exam Type<input id="mp-exam-type" type="text"></label>
+        <label>Exam Name<input id="mp-exam-name" type="text"></label>
+        <label class="full">QR URL <span class="opt">(used in PDF header and thumbnail)</span><input id="mp-qr-url" type="text"></label>
+      </div>
+      <div id="mp-id-preview" class="id-preview" hidden>
+        <span class="id-preview-label">Next ID</span>
+        <strong id="mp-next-id">—</strong>
+        <span class="id-preview-issued" id="mp-issued-count"></span>
+      </div>
+      <label for="mp-input" class="paste-label">Paste MCQs</label>
+      <textarea id="mp-input" spellcheck="false"></textarea>
+      <div class="actions">
+        <button id="mp-create" type="button">Create PDF</button>
+        <span class="msg" id="mp-msg"></span>
+      </div>
+    </div>
+    <div id="mp-summary" class="mp-summary panel-inner" hidden>
+      <h3>Test ready</h3>
+      <dl class="summary-list">
+        <dt>MT ID</dt><dd id="mp-sum-mtid">—</dd>
+        <dt>Subject</dt><dd id="mp-sum-subject">—</dd>
+        <dt>Title</dt><dd id="mp-sum-title">—</dd>
+        <dt>Questions</dt><dd id="mp-sum-count">—</dd>
+      </dl>
+      <div class="actions">
+        <button id="mp-download-raster" class="secondary" type="button">Download PDF</button>
+        <button id="mp-thumb-btn" type="button">Create Thumbnail →</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="tool" data-tool="thumbnail" hidden>
+  <div class="th-toolbar">
+    <h2>Thumbnail Maker</h2>
+    <div class="th-controls">
+      <button id="th-portrait" class="active" type="button">9:16 Portrait</button>
+      <button id="th-landscape" class="secondary" type="button">16:9 Landscape</button>
+      <button type="button" id="th-download">Download PNG</button>
+      <button class="secondary" type="button" id="th-reset">Reset</button>
+    </div>
+  </div>
+  <div class="th-studio">
+    <details class="th-input-panel" open>
+      <summary>Content Input — Auto-saves · Live preview</summary>
+      <div class="th-input-grid">
+        <label class="full">Question<textarea id="th-question"></textarea></label>
+        <label>Option A<input id="th-optA" type="text"></label>
+        <label>Option B<input id="th-optB" type="text"></label>
+        <label>Option C<input id="th-optC" type="text"></label>
+        <label>Option D<input id="th-optD" type="text"></label>
+        <label>Time<input id="th-time" type="text"></label>
+        <label>Marks<input id="th-marks" type="text"></label>
+      </div>
+    </details>
+    <div class="th-preview-area">
+      <div class="th-banner portrait" id="th-banner">
+        <div class="th-banner-inner">
+          <div class="th-brand-row">
+            <div class="th-brand">PrepareKora<span>.in</span></div>
+            <div class="th-test-id" data-bind="mtId">MT ID: MT-GK-003</div>
+          </div>
+          <div class="th-heading-row">
+            <div class="th-heading-left"><small data-bind="subject">GENERAL KNOWLEDGE</small><h1 data-bind="title">Important<br>MCQs</h1></div>
+            <div class="th-heading-right"><small data-bind="examType">MOCK EXAMINATION</small><strong data-bind="examName">ADRE<br>General<br>Knowledge</strong></div>
+          </div>
+          <div class="th-question-card">
+            <div class="th-question-label">PRACTICE QUESTION</div>
+            <p class="th-question-text" data-bind="question">Who is the Education Minister of Assam?</p>
+            <div class="th-options">
+              <div class="th-option"><b>A.</b><span data-bind="optA">Ranoj Pegu</span></div>
+              <div class="th-option"><b>B.</b><span data-bind="optB">Himanta Biswa Sarma</span></div>
+              <div class="th-option"><b>C.</b><span data-bind="optC">Gaurav Gogoi</span></div>
+              <div class="th-option"><b>D.</b><span data-bind="optD">Nitin Gadkari</span></div>
+            </div>
+          </div>
+          <div class="th-bottom-row">
+            <div class="th-stat-card"><small>QUESTIONS</small><strong data-bind="questions">120</strong></div>
+            <div class="th-stat-card"><small>TIME LIMIT</small><strong data-bind="time">30 Min</strong></div>
+            <div class="th-stat-card"><small>MARKS</small><strong data-bind="marks">50</strong></div>
+            <div class="th-qr-area"><div class="th-qr-frame"><img class="th-qr-image" alt="QR Code"></div><div class="th-qr-caption">SCAN TO START</div></div>
+          </div>
+          <div class="th-footer"><strong>PrepareKora.in</strong><span>Learn · Practice · Succeed</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
   </main>
 </div>
 

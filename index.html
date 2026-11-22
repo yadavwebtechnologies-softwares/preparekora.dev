@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>preparekora — Q&amp;A & MCQ Studio</title>
+<title>preparekora — Q&A & MCQ Studio</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Roboto:wght@400;500;600;700;800&family=Noto+Sans+Assamese:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -17,11 +17,9 @@
   --font-en:'Roboto',sans-serif;
   --font-as:'Noto Sans Assamese','Noto Sans Bengali','Roboto',sans-serif;
   --font-mcq-en:'Inter',system-ui,sans-serif;
-  /* QA poster */
   --ph-brand-size:12px;--ph-subject-size:10px;--ph-id-size:9px;
   --qa-label-size:12px;--qa-en-size:12px;--qa-as-size:11px;
   --pf-brand-size:8px;--pf-page-size:8px;--ph-qr-size:48px;
-  /* MCQ frame fixed colors */
   --mcq-ink:#0e1524;--mcq-ink2:#39445a;--mcq-muted:#6d788c;
   --mcq-line:#e4e9f1;--mcq-chip:#f2f5fa;--mcq-brand:#1b57d6;
   --mcq-brand-soft:#eaf0fd;--mcq-ok:#0b8a4b;--mcq-ok-bg:#eaf8f0;--mcq-ok-line:#a6ddbf;
@@ -33,7 +31,6 @@ button:disabled{opacity:.5;cursor:not-allowed}
 input,textarea{font-family:inherit;font-size:inherit;width:100%}
 [hidden]{display:none!important}
 
-/* ---------- Topbar ---------- */
 .topbar{display:flex;align-items:center;justify-content:space-between;
   height:var(--topbar-h);padding:0 20px;background:var(--surface);
   border-bottom:1px solid var(--border);position:sticky;top:0;z-index:60}
@@ -44,15 +41,11 @@ input,textarea{font-family:inherit;font-size:inherit;width:100%}
   font-weight:700;padding:3px 7px;background:#f0f0f0;border-radius:4px;
   color:var(--secondary)}
 
-/* ---------- Workspace ---------- */
 .workspace{display:grid;grid-template-columns:var(--sidebar-w) minmax(0,1fr);
   height:calc(100vh - var(--topbar-h));overflow:hidden}
 
-/* ---------- Sidebar ---------- */
 .sidebar{background:var(--surface);border-right:1px solid var(--border);
   display:flex;flex-direction:column;overflow:hidden}
-
-/* Format tabs at very top */
 .format-tabs{display:grid;grid-template-columns:1fr 1fr;gap:4px;
   padding:14px 20px;border-bottom:1px solid var(--border);background:#fafafa}
 .format-tab{padding:9px 10px;font-size:12.5px;font-weight:600;
@@ -84,7 +77,6 @@ textarea.input{min-height:220px;resize:vertical;
 .hint code{background:#f0f0f0;padding:1px 5px;border-radius:4px;
   font-size:11px;font-family:ui-monospace,monospace}
 
-/* Ratio buttons — 4 columns with dimensions */
 .ratio-group{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
 .ratio-btn{padding:8px 3px;font-size:11.5px;font-weight:600;
   border:1px solid var(--border);border-radius:var(--radius);
@@ -96,7 +88,6 @@ textarea.input{min-height:220px;resize:vertical;
 .ratio-btn.active{background:var(--primary);color:#fff;border-color:var(--primary)}
 .ratio-btn.active .ratio-dim{color:rgba(255,255,255,.75)}
 
-/* Layout toggle (QA only) */
 .layout-group{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 .layout-btn{padding:9px 4px;font-size:12px;font-weight:600;
   border:1px solid var(--border);border-radius:var(--radius);
@@ -109,7 +100,6 @@ textarea.input{min-height:220px;resize:vertical;
 .layout-btn .icon.cols-1 span{width:100%;height:100%}
 .layout-btn .icon.cols-2 span{width:50%;height:100%}
 
-/* Theme grid (QA only) */
 .theme-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
 .theme-swatch{aspect-ratio:1;border-radius:10px;border:2px solid transparent;
   position:relative;cursor:pointer;padding:0;overflow:hidden;
@@ -126,7 +116,6 @@ textarea.input{min-height:220px;resize:vertical;
   font-size:12px;color:var(--secondary);line-height:1.55;margin-top:16px}
 .status strong{color:var(--primary);font-weight:700}
 
-/* Actions */
 .actions{padding:16px 20px;border-top:1px solid var(--border);
   display:flex;flex-direction:column;gap:8px;background:var(--surface)}
 .btn{padding:11px 16px;font-size:14px;font-weight:700;border-radius:var(--radius);
@@ -138,7 +127,6 @@ textarea.input{min-height:220px;resize:vertical;
 .btn-secondary:hover:not(:disabled){background:#f5f5f5;border-color:#ccc}
 .btn-full{width:100%}
 
-/* Result sidebar */
 .result-sidebar{display:flex;flex-direction:column;align-items:center;
   text-align:center;padding:30px 16px}
 .result-sidebar-icon{width:52px;height:52px;border-radius:50%;
@@ -160,7 +148,6 @@ textarea.input{min-height:220px;resize:vertical;
 .result-sidebar-item.done{background:#f0f9f0;border-color:#d4ecd4}
 .result-sidebar-item.done .rsi-page::before{content:"✓ ";color:#2e7d32;font-weight:800}
 
-/* ---------- Preview panel ---------- */
 .preview-panel{display:flex;flex-direction:column;padding:20px;overflow:hidden}
 .preview-edit{display:flex;flex-direction:column;height:100%;overflow:hidden}
 .preview-toolbar{display:flex;align-items:center;justify-content:space-between;
@@ -179,7 +166,6 @@ textarea.input{min-height:220px;resize:vertical;
 .preview-stage::-webkit-scrollbar{width:6px;height:6px}
 .preview-stage::-webkit-scrollbar-thumb{background:#d5d5d5;border-radius:10px}
 
-/* Result view */
 .preview-result{display:flex;flex-direction:column;height:100%;overflow:hidden}
 .result-toolbar{display:flex;align-items:flex-start;justify-content:space-between;
   margin-bottom:14px;gap:12px;flex-shrink:0}
@@ -196,7 +182,7 @@ textarea.input{min-height:220px;resize:vertical;
 
 .result-card{display:flex;flex-direction:column;gap:10px}
 .result-preview{position:relative;overflow:hidden;
-  border-radius:10px;border:1px solid var(--border);background:#fff;
+  border-radius:8px;border:1px solid var(--border);background:#fff;
   box-shadow:0 2px 12px rgba(0,0,0,.06)}
 .result-meta{display:flex;align-items:center;justify-content:space-between;
   gap:8px;padding:0 2px}
@@ -214,7 +200,7 @@ textarea.input{min-height:220px;resize:vertical;
 .btn-download.done::before{content:"✓ ";font-weight:800}
 
 /* ============================================================
-   QA POSTER (themes)
+   QA POSTER (unchanged)
 ============================================================ */
 .poster{
   --poster-bg:linear-gradient(135deg,#fef9f3 0%,#fdf2e9 100%);
@@ -223,7 +209,8 @@ textarea.input{min-height:220px;resize:vertical;
   width:540px;max-width:100%;aspect-ratio:var(--aspect-ratio,3/4);
   padding:22px 24px;display:flex;flex-direction:column;
   background:var(--poster-bg);color:var(--poster-text);
-  border:1px solid rgba(0,0,0,.06);border-radius:12px;
+  border:1px solid rgba(0,0,0,.06);border-radius:8px;
+  overflow:hidden;
   box-shadow:0 4px 20px rgba(0,0,0,.06);
   font-family:var(--font-ui);flex-shrink:0}
 
@@ -295,11 +282,10 @@ textarea.input{min-height:220px;resize:vertical;
   color:var(--poster-text-soft);opacity:.7;font-size:13px}
 
 /* ============================================================
-   MCQ EXPLANATION FRAME (exact design from reference)
-   Renders at 1080 native width, scaled by --z on wrapper
+   MCQ EXPLANATION FRAME
 ============================================================ */
 .mcq-viewport{width:100%;position:relative;overflow:hidden;
-  border-radius:12px;background:#fff}
+  border-radius:8px;background:#fff}
 .mcq-frame{
   width:1080px;height:var(--frame-h,1350px);
   transform:scale(var(--z,0.5));transform-origin:top left;
@@ -309,6 +295,9 @@ textarea.input{min-height:220px;resize:vertical;
   position:absolute;top:0;left:0;
   font-family:var(--font-mcq-en);
   --frame-h:1350px;--z:0.5;--s:1;--pad:64px;
+  --ex-fit:1;
+  border-radius:8px;
+  overflow:hidden;
 }
 
 .mcq-frame.r11 { --s:.82;  --pad:52px; --frame-h:1080px }
@@ -316,7 +305,6 @@ textarea.input{min-height:220px;resize:vertical;
 .mcq-frame.r45 { --s:1;    --pad:64px; --frame-h:1350px }
 .mcq-frame.r916{ --s:1.06; --pad:72px; --frame-h:1920px }
 
-/* Header */
 .mcq-frame .topbar{display:flex;justify-content:space-between;align-items:center;
   gap:calc(16px * var(--s));flex:0 0 auto;height:auto;padding:0;
   background:transparent;border:0;position:static}
@@ -326,30 +314,36 @@ textarea.input{min-height:220px;resize:vertical;
   color:var(--mcq-brand);background:var(--mcq-brand-soft)}
 .mcq-frame .pill.dark{color:#fff;background:var(--mcq-ink);flex:0 0 auto}
 
-/* Question */
 .mcq-frame .q{flex:0 0 auto}
 .mcq-frame .q-label{font-size:calc(19px * var(--s));font-weight:700;
   letter-spacing:.16em;text-transform:uppercase;color:var(--mcq-muted);
   margin-bottom:calc(12px * var(--s))}
 .mcq-frame .q-en{font-size:calc(41px * var(--s));font-weight:700;
-  line-height:1.24;letter-spacing:-.015em}
+  line-height:1.24;letter-spacing:-.015em;
+  text-align:justify;text-justify:inter-word;hyphens:none;
+  overflow-wrap:break-word;word-break:normal}
 .mcq-frame .q-as{font-family:var(--font-as);font-size:calc(33px * var(--s));
   font-weight:500;line-height:1.45;color:var(--mcq-ink2);
-  margin-top:calc(10px * var(--s))}
+  margin-top:calc(10px * var(--s));
+  text-align:justify;text-justify:inter-word;hyphens:none;
+  overflow-wrap:break-word;word-break:normal}
 
-/* Options */
-.mcq-frame .opts{list-style:none;display:flex;flex-direction:column;
-  gap:calc(13px * var(--s));flex:0 0 auto}
-.mcq-frame .opt{display:flex;align-items:center;gap:calc(18px * var(--s));
-  padding:calc(14px * var(--s)) calc(20px * var(--s));
+/* Options 2x2 grid */
+.mcq-frame .opts{list-style:none;display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:calc(14px * var(--s)) calc(16px * var(--s));
+  flex:0 0 auto}
+.mcq-frame .opt{display:flex;align-items:center;gap:calc(14px * var(--s));
+  padding:calc(14px * var(--s)) calc(18px * var(--s));
   border:2px solid var(--mcq-line);border-radius:calc(18px * var(--s));
-  background:#fff}
+  background:#fff;min-width:0}
 .mcq-frame .opt .key{flex:0 0 auto;
   width:calc(50px * var(--s));height:calc(50px * var(--s));
   border-radius:50%;display:grid;place-items:center;
   background:var(--mcq-chip);color:var(--mcq-ink2);
   font-size:calc(24px * var(--s));font-weight:700}
-.mcq-frame .opt .txt{display:flex;flex-direction:column;min-width:0}
+.mcq-frame .opt .txt{display:flex;flex-direction:column;min-width:0;
+  overflow-wrap:anywhere;word-break:break-word}
 .mcq-frame .opt .en{font-size:calc(30px * var(--s));font-weight:600;line-height:1.3}
 .mcq-frame .opt .as{font-family:var(--font-as);
   font-size:calc(24px * var(--s));color:var(--mcq-muted);
@@ -361,9 +355,10 @@ textarea.input{min-height:220px;resize:vertical;
 .mcq-frame .opt.is-correct .as{color:#3f7a5c}
 .mcq-frame .opt.is-correct .tick{opacity:1}
 
-/* Explanation */
+/* Explanation — justify + center + auto-fit */
 .mcq-frame .explain{flex:1 1 auto;min-height:0;overflow:hidden;
-  display:flex;flex-direction:column;gap:calc(12px * var(--s));
+  display:flex;flex-direction:column;justify-content:center;
+  gap:calc(12px * var(--s));
   padding:calc(26px * var(--s)) calc(30px * var(--s));
   border:2px solid var(--mcq-line);
   border-left:calc(8px * var(--s)) solid var(--mcq-brand);
@@ -374,25 +369,44 @@ textarea.input{min-height:220px;resize:vertical;
 .mcq-frame .ex-head .as-head{font-family:var(--font-as);
   font-size:calc(23px * var(--s));font-weight:600;
   letter-spacing:0;text-transform:none;color:var(--mcq-muted)}
-.mcq-frame .ex-en{font-size:calc(29px * var(--s));line-height:1.5;color:var(--mcq-ink2)}
+.mcq-frame .ex-en{font-size:calc(29px * var(--s) * var(--ex-fit));
+  line-height:1.5;color:var(--mcq-ink2);
+  text-align:justify;text-justify:inter-word;hyphens:none;
+  overflow-wrap:break-word;word-break:normal}
 .mcq-frame .rule{height:2px;background:var(--mcq-line);
   margin:calc(4px * var(--s)) 0;flex:0 0 auto}
 .mcq-frame .ex-as{font-family:var(--font-as);
-  font-size:calc(27px * var(--s));line-height:1.62;color:var(--mcq-ink2)}
+  font-size:calc(27px * var(--s) * var(--ex-fit));
+  line-height:1.62;color:var(--mcq-ink2);
+  text-align:justify;text-justify:inter-word;hyphens:none;
+  overflow-wrap:break-word;word-break:normal}
 
-/* Footer */
 .mcq-frame .foot{flex:0 0 auto;display:flex;justify-content:space-between;
   align-items:center;border-top:2px solid var(--mcq-line);
   padding-top:calc(14px * var(--s));font-size:calc(21px * var(--s));
-  font-weight:600;color:var(--mcq-muted);letter-spacing:.02em}
-.mcq-frame .foot .set{color:var(--mcq-ink2)}
+  font-weight:600;color:var(--mcq-muted);letter-spacing:.02em;gap:calc(16px * var(--s))}
+.mcq-frame .foot .set{color:var(--mcq-ink2);min-width:0;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap}
+.mcq-frame .foot .foot-right{display:inline-flex;align-items:center;
+  gap:calc(12px * var(--s));min-width:0;flex-shrink:0}
+.mcq-frame .foot .foot-right .foot-subject{min-width:0;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap}
+.mcq-frame .foot-qr{
+  width:calc(64px * var(--s));height:calc(64px * var(--s));
+  background:#fff;padding:calc(4px * var(--s));
+  border-radius:calc(6px * var(--s));
+  box-shadow:0 0 0 1px rgba(0,0,0,.06);
+  display:grid;place-items:center;overflow:hidden;flex-shrink:0;
+}
+.mcq-frame .foot-qr img,
+.mcq-frame .foot-qr canvas{
+  width:100%!important;height:100%!important;display:block;
+}
 
-/* Frame viewport containers */
 .preview-stage .mcq-viewport{max-width:min(100%, 540px);margin:0 auto;
   box-shadow:0 4px 20px rgba(0,0,0,.08)}
 .preview-stage .poster{max-width:min(100%, 540px);margin:0 auto}
 
-/* Card mini frames */
 .result-card .mcq-viewport,
 .result-card .poster-viewport{width:100%;border-radius:8px;
   box-shadow:0 1px 6px rgba(0,0,0,.04)}
@@ -403,7 +417,6 @@ textarea.input{min-height:220px;resize:vertical;
   transform:scale(var(--z,0.5));transform-origin:top left;
   border-radius:0!important;border:none!important;box-shadow:none!important}
 
-/* Overlay */
 .export-overlay{position:fixed;inset:0;z-index:1000;display:flex;
   align-items:center;justify-content:center;padding:20px;
   background:rgba(255,255,255,.94);backdrop-filter:blur(10px)}
@@ -421,9 +434,6 @@ textarea.input{min-height:220px;resize:vertical;
 .progress-bar{height:100%;width:0;background:var(--primary);
   border-radius:4px;transition:width .2s ease}
 
-/* ============================================================
-   RESPONSIVE
-============================================================ */
 @media (max-width:1050px){:root{--sidebar-w:360px}}
 @media (max-width:860px){
   :root{--topbar-h:52px}
@@ -462,11 +472,7 @@ textarea.input{min-height:220px;resize:vertical;
 </div>
 
 <main class="workspace">
-
-  <!-- ==================== SIDEBAR ==================== -->
   <aside class="sidebar">
-
-    <!-- Format tabs -->
     <div class="format-tabs" role="tablist">
       <button class="format-tab active" data-format="qa" type="button">
         <span class="dot"></span>Q&amp;A Image
@@ -476,16 +482,12 @@ textarea.input{min-height:220px;resize:vertical;
       </button>
     </div>
 
-    <!-- EDIT mode sidebar -->
     <div class="sidebar-scroll" id="sidebarInputs">
-
-      <!-- ============ QA MODE INPUTS ============ -->
       <div id="qaInputs">
         <div class="field-group">
           <label for="subject">Subject</label>
           <input id="subject" class="input" type="text" value="History">
         </div>
-
         <div class="field-group">
           <label for="input">Q&amp;A input</label>
           <textarea id="input" class="input" spellcheck="false">Q: Who was the first President of India? (ভাৰতৰ প্ৰথম ৰাষ্ট্ৰপতি কোন আছিল?)
@@ -527,7 +529,6 @@ Ans: Indira Gandhi (ইন্দিৰা গান্ধী)</textarea>
         </div>
       </div>
 
-      <!-- ============ MCQ MODE INPUTS ============ -->
       <div id="mcqInputs" hidden>
         <div class="field-group">
           <label for="mcqInput">MCQ + Explanation input</label>
@@ -569,7 +570,6 @@ Exp-AS: কোণাৰ্ক সূৰ্য মন্দিৰ হৈছে �
         </div>
       </div>
 
-      <!-- ============ SHARED: RATIO ============ -->
       <div class="field-group">
         <label>Aspect ratio</label>
         <div class="ratio-group">
@@ -592,7 +592,6 @@ Exp-AS: কোণাৰ্ক সূৰ্য মন্দিৰ হৈছে �
         </div>
       </div>
 
-      <!-- ============ QA-ONLY: LAYOUT + THEME ============ -->
       <div id="qaExtras">
         <div class="field-group">
           <label>Layout</label>
@@ -605,7 +604,6 @@ Exp-AS: কোণাৰ্ক সূৰ্য মন্দিৰ হৈছে �
             </button>
           </div>
         </div>
-
         <div class="field-group">
           <label>Theme</label>
           <div class="theme-grid" id="themeGrid"></div>
@@ -615,7 +613,6 @@ Exp-AS: কোণাৰ্ক সূৰ্য মন্দিৰ হৈছে �
       <div class="status" id="status">—</div>
     </div>
 
-    <!-- RESULT mode sidebar -->
     <div class="sidebar-scroll" id="sidebarResult" hidden>
       <div class="result-sidebar">
         <div class="result-sidebar-icon">✓</div>
@@ -631,12 +628,9 @@ Exp-AS: কোণাৰ্ক সূৰ্য মন্দিৰ হৈছে �
       <button class="btn btn-primary btn-full" id="previewBtn" type="button">Analyze &amp; Preview images</button>
       <button class="btn btn-secondary btn-full" id="backBtn" type="button" hidden>← Back to edit</button>
     </div>
-
   </aside>
 
-  <!-- ==================== PREVIEW ==================== -->
   <section class="preview-panel">
-
     <div class="preview-edit" id="previewEdit">
       <div class="preview-toolbar">
         <h2>Live preview <small>(approximate)</small></h2>
@@ -656,9 +650,7 @@ Exp-AS: কোণাৰ্ক সূৰ্য মন্দিৰ হৈছে �
       </div>
       <div class="result-grid" id="resultGrid"></div>
     </div>
-
   </section>
-
 </main>
 
 <div class="export-overlay" id="exportOverlay" hidden>
@@ -684,8 +676,8 @@ Exp-AS: কোণাৰ্ক সূৰ্য মন্দিৰ হৈছে �
   const RATIO_KEY  = "pk_qa_ratio";
   const THEME_KEY  = "pk_qa_theme";
   const FORMAT_KEY = "pk_format";
-  const EXPORT_SCALE_QA  = 4;   // 540 → 2160 (4K)
-  const EXPORT_SCALE_MCQ = 2;   // 1080 → 2160 (4K)
+  const EXPORT_SCALE_QA  = 4;
+  const EXPORT_SCALE_MCQ = 2;
   const LOCKED_QR_URL = "https://chat.whatsapp.com/DLrcA98MrlYKOeZ5DMeN5Z";
 
   const THEMES = [
@@ -701,7 +693,6 @@ Exp-AS: কোণাৰ্ক সূৰ্য মন্দিৰ হৈছে �
     { id:'peach',    name:'Peach',    bg:'linear-gradient(135deg,#fff6f0 0%,#ffe9d8 100%)' }
   ];
 
-  // Exact pixel dimensions for every ratio
   const RATIOS = {
     '1:1':  { w: 1080, h: 1080, mcqClass: 'r11'  },
     '3:4':  { w: 1080, h: 1440, mcqClass: 'r34'  },
@@ -725,7 +716,6 @@ Exp-AS: কোণাৰ্ক সূৰ্য মন্দিৰ হৈছে �
   let isExporting = false;
   let analyzeToken = 0;
 
-  /* ---------- ID ---------- */
   function initId() {
     const now = new Date().getMonth() + 1;
     let m = parseInt(localStorage.getItem(ID_MONTH_KEY) || "0", 10);
@@ -746,7 +736,6 @@ Exp-AS: কোণাৰ্ক সূৰ্য মন্দিৰ হৈছে �
     return "PR/" + String(state.id.month).padStart(2,"0") + "/" + String(n).padStart(4,"0");
   }
 
-  /* ---------- Prefs ---------- */
   function loadPrefs() {
     const sf = localStorage.getItem(FORMAT_KEY);
     if (sf === "qa" || sf === "mcq") state.format = sf;
@@ -759,7 +748,6 @@ Exp-AS: কোণাৰ্ক সূৰ্য মন্দিৰ হৈছে �
   }
   function savePref(k, v) { localStorage.setItem(k, v); }
 
-  /* ---------- Utils ---------- */
   function escapeHTML(s) {
     return String(s ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;")
       .replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
@@ -784,7 +772,6 @@ Exp-AS: কোণাৰ্ক সূৰ্য মন্দিৰ হৈছে �
     });
   }
 
-  /* ---------- QR ---------- */
   function renderQR(container) {
     if (!container || !window.QRCode) return;
     container.innerHTML = "";
@@ -798,7 +785,48 @@ Exp-AS: কোণাৰ্ক সূৰ্য মন্দিৰ হৈছে �
   }
 
   /* ============================================================
-     QA PARSER + PAGINATION (unchanged behavior)
+     fitMCQFrame — now GROWS to fill whitespace (capped at 1.20x)
+     and SHRINKS when overflowing (floor 0.5x).
+
+     Growth cap rationale: at 1.20× the explanation never exceeds
+     the question font size (EN 29*1.20=34.8 < 41; AS 27*1.20=32.4
+     < 33), preserving visual hierarchy. Combined with
+     justify-content:center on .explain, any residual whitespace
+     splits evenly above and below instead of piling at the bottom.
+  ============================================================ */
+  function fitMCQFrame(frame) {
+    if (!frame) return;
+    const explain = frame.querySelector(".explain");
+    if (!explain) return;
+
+    const test = (f) => {
+      frame.style.setProperty("--ex-fit", String(f));
+      void explain.offsetHeight;
+      return explain.scrollHeight <= explain.clientHeight + 1;
+    };
+
+    if (test(1)) {
+      // Fits at natural scale — grow to fill whitespace
+      let best = 1;
+      for (let step = 1; step <= 5; step++) {
+        const f = +(1 + step * 0.04).toFixed(2);  // 1.04 … 1.20
+        if (!test(f)) break;
+        best = f;
+      }
+      test(best);
+    } else {
+      // Overflows — shrink toward 0.5
+      for (let step = 1; step <= 12; step++) {
+        const f = +(1 - step * 0.04).toFixed(2);  // 0.96 … 0.52
+        if (f < 0.5) break;
+        if (test(f)) return;
+      }
+      test(0.5);
+    }
+  }
+
+  /* ============================================================
+     QA parser + pagination (unchanged)
   ============================================================ */
   function splitInline(text) {
     const t = (text || "").trim();
@@ -836,9 +864,6 @@ Exp-AS: কোণাৰ্ক সূৰ্য মন্দিৰ হৈছে �
     return pages;
   }
 
-  /* ============================================================
-     MCQ PARSER
-  ============================================================ */
   function parseMCQs(text) {
     const blocks = text.split(/\n\s*---\s*\n/);
     return blocks.map(block => {
@@ -847,9 +872,7 @@ Exp-AS: কোণাৰ্ক সূৰ্য মন্দিৰ হৈছে �
         const m = line.match(/^([A-Za-z][A-Za-z\-]*)\s*:\s*(.*)$/);
         if (m) {
           const key = m[1].toUpperCase();
-          let val = m[2].trim();
-          // Support multiline: if line ends with continuation, keep going
-          d[key] = val;
+          d[key] = m[2].trim();
         }
       });
       return {
@@ -868,9 +891,6 @@ Exp-AS: কোণাৰ্ক সূৰ্য মন্দিৰ হৈছে �
     }).filter(x => x.qEn || x.qAs);
   }
 
-  /* ============================================================
-     QA BUILDERS
-  ============================================================ */
   function buildQABlockHTML(item) {
     const qParts = [];
     if (item.qEn) qParts.push(`<span class="qa-en">${escapeHTML(item.qEn)}</span>`);
@@ -915,12 +935,7 @@ Exp-AS: কোণাৰ্ক সূৰ্য মন্দিৰ হৈছে �
       </footer>`;
   }
 
-  /* ============================================================
-     MCQ BUILDERS (exact explanation layout)
-  ============================================================ */
   function buildMCQFrameHTML(mcq, index, total) {
-    const ratio = RATIOS[state.ratio];
-    const cls = ratio.mcqClass;
     const correct = (letter) => (mcq.ans === letter ? " is-correct" : "");
 
     const opt = (letter, en, as) => `
@@ -963,15 +978,17 @@ Exp-AS: কোণাৰ্ক সূৰ্য মন্দিৰ হৈছে �
 
       <div class="foot">
         <span class="set">${escapeHTML(mcq.set || "")}</span>
-        <span>${escapeHTML(mcq.subject || "")}</span>
+        <div class="foot-right">
+          <span class="foot-subject">${escapeHTML(mcq.subject || "")}</span>
+          <div class="foot-qr"></div>
+        </div>
       </div>
     `;
   }
   function makeMCQFrameElement(mcq, index, total, forExport) {
     const ratio = RATIOS[state.ratio];
-    const cls = ratio.mcqClass;
     const frame = document.createElement("div");
-    frame.className = `mcq-frame ${cls}`;
+    frame.className = `mcq-frame ${ratio.mcqClass}`;
     frame.dataset.h = ratio.h;
     if (forExport) {
       frame.style.setProperty("--z", "1");
@@ -979,12 +996,11 @@ Exp-AS: কোণাৰ্ক সূৰ্য মন্দিৰ হৈছে �
       frame.style.transform = "none";
     }
     frame.innerHTML = buildMCQFrameHTML(mcq, index, total);
+    const qrEl = frame.querySelector(".foot-qr");
+    if (qrEl) renderQR(qrEl);
     return frame;
   }
 
-  /* ============================================================
-     APPLY UI STATE
-  ============================================================ */
   function applyFormatUI() {
     document.querySelectorAll(".format-tab").forEach(t =>
       t.classList.toggle("active", t.dataset.format === state.format));
@@ -1023,9 +1039,6 @@ Exp-AS: কোণাৰ্ক সূৰ্য মন্দিৰ হৈছে �
     });
   }
 
-  /* ============================================================
-     LIVE PREVIEW (edit mode)
-  ============================================================ */
   function renderLive() {
     if (state.mode !== "edit") return;
     const holder = $("livePreviewHolder");
@@ -1038,8 +1051,7 @@ Exp-AS: কোণাৰ্ক সূৰ্য মন্দিৰ হৈছে �
       const poster = document.createElement("div");
       poster.className = "poster";
       poster.setAttribute("data-theme", state.theme);
-      poster.style.setProperty("--aspect-ratio",
-        state.ratio.replace(":", "/"));
+      poster.style.setProperty("--aspect-ratio", state.ratio.replace(":", "/"));
       if (!items.length) {
         poster.innerHTML = buildQAPageHTML([], 0, 1);
         poster.innerHTML = poster.innerHTML.replace(/<section class="poster-body">[\s\S]*?<\/section>/,
@@ -1082,13 +1094,17 @@ Exp-AS: কোণাৰ্ক সূৰ্য মন্দিৰ হৈছে �
       vp.appendChild(frame);
       holder.appendChild(vp);
       scaleMCQViewport(vp, frame);
+      fitMCQFrame(frame);
+      document.fonts.ready.then(() => {
+        if (state.mode !== "edit") return;
+        fitMCQFrame(frame);
+      });
       $("status").innerHTML =
         `<strong>${mcqs.length}</strong> MCQ${mcqs.length>1?"s":""} · <strong>${mcqs.length}</strong> image${mcqs.length>1?"s":""}<br>` +
         `<span style="color:#888;font-size:11px">One MCQ = one image</span>`;
     }
   }
 
-  // Scale an MCQ viewport so the 1080-wide frame fits container
   function scaleMCQViewport(viewport, frame) {
     const containerW = viewport.clientWidth;
     if (containerW < 1) return;
@@ -1097,7 +1113,6 @@ Exp-AS: কোণাৰ্ক সূৰ্য মন্দিৰ হৈছে �
     viewport.style.height = (parseInt(frame.dataset.h) * scale) + "px";
   }
 
-  // Observe container width, rescale MCQ frames on resize
   const resizeObserver = new ResizeObserver(entries => {
     entries.forEach(entry => {
       const vp = entry.target;
@@ -1105,13 +1120,9 @@ Exp-AS: কোণাৰ্ক সূৰ্য মন্দিৰ হৈছে �
       if (frame && !frame.dataset.export) {
         scaleMCQViewport(vp, frame);
       }
-      // QA poster: let CSS max-width handle it, but log nothing
     });
   });
 
-  /* ============================================================
-     INTELLIGENT QA PAGINATION
-  ============================================================ */
   async function computeQAPages(items) {
     if (!items.length) return [];
     const ratio = RATIOS[state.ratio];
@@ -1178,9 +1189,6 @@ Exp-AS: কোণাৰ্ক সূৰ্য মন্দিৰ হৈছে �
     return result;
   }
 
-  /* ============================================================
-     ENTER / EXIT PREVIEW MODE
-  ============================================================ */
   async function enterPreviewMode() {
     const token = ++analyzeToken;
     $("exportOverlay").hidden = false;
@@ -1253,9 +1261,6 @@ Exp-AS: কোণাৰ্ক সূৰ্য মন্দিৰ হৈছে �
     renderLive();
   }
 
-  /* ============================================================
-     RESULT VIEW
-  ============================================================ */
   function renderResultView() {
     const total = state.format === "qa" ? state.pages.length : state.mcqs.length;
     const ratio = RATIOS[state.ratio];
@@ -1271,7 +1276,6 @@ Exp-AS: কোণাৰ্ক সূৰ্য মন্দিৰ হৈছে �
     }
     updateBadge();
 
-    // Sidebar list
     const list = $("resultSidebarList");
     list.innerHTML = "";
     for (let i = 0; i < total; i++) {
@@ -1288,7 +1292,6 @@ Exp-AS: কোণাৰ্ক সূৰ্য মন্দিৰ হৈছে �
       list.appendChild(row);
     }
 
-    // Grid
     const grid = $("resultGrid");
     grid.innerHTML = "";
     for (let i = 0; i < total; i++) {
@@ -1312,7 +1315,6 @@ Exp-AS: কোণাৰ্ক সূৰ্য মন্দিৰ হৈছে �
         pv.appendChild(poster);
         preview.appendChild(pv);
         card.appendChild(preview);
-        // scale after mount
         requestAnimationFrame(() => {
           const z = pv.clientWidth / 540;
           poster.style.setProperty("--z", z);
@@ -1329,7 +1331,11 @@ Exp-AS: কোণাৰ্ক সূৰ্য মন্দিৰ হৈছে �
         vp.appendChild(frame);
         preview.appendChild(vp);
         card.appendChild(preview);
-        requestAnimationFrame(() => scaleMCQViewport(vp, frame));
+        requestAnimationFrame(() => {
+          fitMCQFrame(frame);
+          scaleMCQViewport(vp, frame);
+        });
+        document.fonts.ready.then(() => fitMCQFrame(frame));
       }
 
       const meta = document.createElement("div");
@@ -1370,9 +1376,6 @@ Exp-AS: কোণাৰ্ক সূৰ্য মন্দিৰ হৈছে �
     if (row) row.classList.add("done");
   }
 
-  /* ============================================================
-     DOWNLOAD ONE PAGE
-  ============================================================ */
   function downloadDataURL(url, name) {
     const a = document.createElement("a");
     a.href = url; a.download = name;
@@ -1396,7 +1399,6 @@ Exp-AS: কোণাৰ্ক সূৰ্য মন্দিৰ হৈছে �
 
     await fontsReady();
 
-    // Offscreen render wrapper
     const off = document.createElement("div");
     off.style.cssText = "position:fixed;left:-99999px;top:0;pointer-events:none";
 
@@ -1426,11 +1428,16 @@ Exp-AS: কোণাৰ্ক সূৰ্য মন্দিৰ হৈছে �
     await waitFrame();
     await new Promise(r => setTimeout(r, 200));
 
+    if (state.format === "mcq") {
+      fitMCQFrame(targetEl);
+      await waitFrame();
+    }
+
     try {
       $("exportProgressBar").style.width = "50%";
       const canvas = await html2canvas(targetEl, {
         scale: exportScale,
-        backgroundColor: "#ffffff",
+        backgroundColor: null,
         useCORS: true, logging: false, imageTimeout: 0
       });
       $("exportProgressBar").style.width = "90%";
@@ -1452,11 +1459,7 @@ Exp-AS: কোণাৰ্ক সূৰ্য মন্দিৰ হৈছে �
     }
   }
 
-  /* ============================================================
-     EVENTS
-  ============================================================ */
   function bind() {
-    // Format tabs
     document.querySelectorAll(".format-tab").forEach(tab => {
       tab.addEventListener("click", () => {
         state.format = tab.dataset.format;
@@ -1466,12 +1469,10 @@ Exp-AS: কোণাৰ্ক সূৰ্য মন্দিৰ হৈছে �
       });
     });
 
-    // Input changes
     $("input").addEventListener("input", renderLive);
     $("subject").addEventListener("input", renderLive);
     $("mcqInput").addEventListener("input", renderLive);
 
-    // Ratio
     document.querySelectorAll(".ratio-btn").forEach(b => {
       b.addEventListener("click", () => {
         state.ratio = b.dataset.ratio;
@@ -1481,7 +1482,6 @@ Exp-AS: কোণাৰ্ক সূৰ্য মন্দিৰ হৈছে �
       });
     });
 
-    // Layout (QA only)
     document.querySelectorAll(".layout-btn").forEach(b => {
       b.addEventListener("click", () => {
         state.layout = b.dataset.layout;
@@ -1491,11 +1491,9 @@ Exp-AS: কোণাৰ্ক সূৰ্য মন্দিৰ হৈছে �
       });
     });
 
-    // Actions
     $("previewBtn").addEventListener("click", enterPreviewMode);
     $("backBtn").addEventListener("click", exitPreviewMode);
 
-    // Window resize — rescale everything
     window.addEventListener("resize", () => {
       document.querySelectorAll(".mcq-viewport").forEach(vp => {
         const frame = vp.querySelector(".mcq-frame");
@@ -1511,9 +1509,6 @@ Exp-AS: কোণাৰ্ক সূৰ্য মন্দিৰ হৈছে �
     });
   }
 
-  /* ============================================================
-     INIT
-  ============================================================ */
   function init() {
     initId();
     loadPrefs();

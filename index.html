@@ -144,6 +144,14 @@
     <div id="adminContent" class="admin-content">Loading…</div>
   </div>
 </div>
+  <div class="export-overlay" id="exportOverlay" hidden>
+  <div class="export-loader">
+    <div class="loader-spinner"></div>
+    <h3>Preparing image</h3>
+    <p>Rendering high-resolution image...</p>
+    <div class="progress-track"><div class="progress-bar" id="exportProgressBar"></div></div>
+  </div>
+</div>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
@@ -152,5 +160,8 @@
 <script src="js/auth.js"></script>
 <script src="js/router.js"></script>
 <script src="js/admin.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="js/module-qa-image.js"></script>
 </body>
 </html>

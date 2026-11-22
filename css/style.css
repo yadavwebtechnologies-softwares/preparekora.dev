@@ -192,3 +192,11 @@ input:focus,textarea:focus,select:focus{outline:none}
   .tool[data-tool="qa-image"] .qa-preview-panel{min-height:520px}
   .tool[data-tool="qa-image"] .result-grid{grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px}
 }
+.export-overlay{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(255,255,255,.94);backdrop-filter:blur(10px)}
+.export-loader{width:min(100%,300px);padding:26px;text-align:center;background:#fff;border:1px solid var(--border);border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.08)}
+.loader-spinner{width:32px;height:32px;margin:0 auto 16px;border:3px solid #eee;border-top-color:var(--text);border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.export-loader h3{font-size:15px;font-weight:700}
+.export-loader p{margin-top:6px;font-size:12.5px;color:var(--muted)}
+.progress-track{height:4px;margin-top:16px;border-radius:4px;background:#eee;overflow:hidden}
+.progress-bar{height:100%;width:0;background:var(--text);border-radius:4px;transition:width .2s ease}

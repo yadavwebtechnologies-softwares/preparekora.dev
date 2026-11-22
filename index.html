@@ -42,9 +42,84 @@
   </header>
 
   <main class="workspace">
-    <section class="tool" data-tool="qa-image">
-      <div class="placeholder">Q&amp;A Image module — ported in next step</div>
+<section class="tool" data-tool="qa-image">
+  <div class="qa-layout">
+    <aside class="qa-sidebar">
+      <div class="qa-sidebar-scroll">
+        <div class="field-group">
+          <label for="qa-subject">Subject</label>
+          <input id="qa-subject" class="input" type="text" value="History">
+        </div>
+
+        <div class="field-group">
+          <label for="qa-input">Q&amp;A input</label>
+          <textarea id="qa-input" class="input" spellcheck="false"></textarea>
+          <p class="hint">Format: <code>Q: English (Assamese)</code> then <code>Ans: English (Assamese)</code></p>
+        </div>
+
+        <div class="field-group">
+          <label>Aspect ratio</label>
+          <div class="ratio-group">
+            <button class="ratio-btn" data-ratio="1:1" type="button">
+              <span class="ratio-label">1:1</span><span class="ratio-dim">1080×1080</span>
+            </button>
+            <button class="ratio-btn" data-ratio="3:4" type="button">
+              <span class="ratio-label">3:4</span><span class="ratio-dim">1080×1440</span>
+            </button>
+            <button class="ratio-btn active" data-ratio="4:5" type="button">
+              <span class="ratio-label">4:5</span><span class="ratio-dim">1080×1350</span>
+            </button>
+            <button class="ratio-btn" data-ratio="9:16" type="button">
+              <span class="ratio-label">9:16</span><span class="ratio-dim">1080×1920</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label>Layout</label>
+          <div class="layout-group">
+            <button class="layout-btn" data-layout="1col" type="button">1 Column</button>
+            <button class="layout-btn active" data-layout="2col" type="button">2 Columns</button>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label>Theme</label>
+          <div class="theme-grid" id="qa-theme-grid"></div>
+        </div>
+
+        <div class="status" id="qa-status">—</div>
+      </div>
+
+      <div class="qa-actions">
+        <button class="btn-primary btn-full" id="qa-preview-btn" type="button">Analyze &amp; Preview images</button>
+        <button class="btn-secondary btn-full" id="qa-back-btn" type="button" hidden>← Back to edit</button>
+      </div>
+    </aside>
+
+    <section class="qa-preview-panel">
+      <div class="qa-preview-edit" id="qa-preview-edit">
+        <div class="preview-toolbar">
+          <h2>Live preview <small>(approximate)</small></h2>
+        </div>
+        <div class="preview-stage">
+          <div id="qa-live-holder"></div>
+        </div>
+      </div>
+
+      <div class="qa-preview-result" id="qa-preview-result" hidden>
+        <div class="result-toolbar">
+          <div>
+            <h2 id="qa-result-count">Pages generated</h2>
+            <p id="qa-result-breakdown">—</p>
+          </div>
+          <span class="result-toolbar-badge" id="qa-result-badge">0 / 0 downloaded</span>
+        </div>
+        <div class="result-grid" id="qa-result-grid"></div>
+      </div>
     </section>
+  </div>
+</section>
     <section class="tool" data-tool="mcq-explanation" hidden>
       <div class="placeholder">MCQ + Explanation module — ported in next step</div>
     </section>

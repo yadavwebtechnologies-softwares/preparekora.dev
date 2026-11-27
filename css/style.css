@@ -153,7 +153,7 @@ textarea.input{resize:vertical;min-height:64px;line-height:1.5;font-family:inher
 .poster .h-badge{font-family:ui-monospace,monospace;font-size:calc(var(--fs-b) - 2px);font-weight:600;color:var(--ink2);padding:8px 16px;border:1px solid var(--line);border-radius:99px;background:#fff;min-width:140px;text-align:center;white-space:nowrap}
 .poster .list{display:flex;flex-direction:column;flex:1 1 auto;margin-top:28px;margin-bottom:28px;overflow:hidden;min-height:0}
 .poster .item{display:flex;flex-direction:column;gap:16px;padding:26px 0}
-.poster[data-type="options"] .item{gap:24px}
+.poster[data-type="options"] .item{gap:30px}
 .poster .item:first-child{padding-top:12px}
 .poster .row{display:flex;align-items:flex-start;gap:24px}
 .poster .marker{flex:0 0 36px;font-size:24px;font-weight:800;color:var(--ink);line-height:1.4;margin-top:2px}

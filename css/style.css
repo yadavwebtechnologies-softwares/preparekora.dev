@@ -1,3 +1,4 @@
+
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
   --bg:#f7f8fa;--surface:#fff;--surface-2:#f2f4f7;
@@ -10,6 +11,23 @@
   --shadow-sm:0 1px 3px rgba(16,24,40,.06),0 1px 2px rgba(16,24,40,.04);
   --shadow-md:0 8px 24px rgba(16,24,40,.08),0 2px 4px rgba(16,24,40,.04);
 }
+
+/* ===== LOCAL ASSAMESE FONTS ===== */
+@font-face{
+  font-family:'Jyotirupa';
+  src:url('../fonts/Jyotirupa.ttf') format('truetype');
+  font-style:normal;
+  font-weight:400;
+  font-display:swap;
+}
+@font-face{
+  font-family:'Rangmon';
+  src:url('../fonts/Rangmon.ttf') format('truetype');
+  font-style:normal;
+  font-weight:400;
+  font-display:swap;
+}
+
 [hidden]{display:none!important}
 body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased;min-height:100vh}
 button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit}
@@ -121,7 +139,7 @@ textarea.input{resize:vertical;min-height:64px;line-height:1.5;font-family:inher
 .poster{
   --ink:#0f172a;--ink2:#334155;--muted:#64748b;--line:#e2e8f0;
   --paper:#fafbfc;--brand:#4f46e5;--ok:#10b981;--ok-bg:#ecfdf5;
-  --font-as:'Noto Sans Assamese',sans-serif;
+  --font-as:'Jyotirupa',sans-serif;
   --fs-q:24px;--fs-a:24px;--fs-o:20px;--fs-e:20px;--fs-h:26px;--fs-b:20px;
   width:1080px;height:1350px;
   background:var(--paper);color:var(--ink);
@@ -136,6 +154,7 @@ textarea.input{resize:vertical;min-height:64px;line-height:1.5;font-family:inher
 .poster .h-badge{font-family:ui-monospace,monospace;font-size:calc(var(--fs-b) - 2px);font-weight:600;color:var(--ink2);padding:8px 16px;border:1px solid var(--line);border-radius:99px;background:#fff;min-width:140px;text-align:center;white-space:nowrap}
 .poster .list{display:flex;flex-direction:column;flex:1 1 auto;margin-top:28px;margin-bottom:28px;overflow:hidden;min-height:0}
 .poster .item{display:flex;flex-direction:column;gap:16px;padding:26px 0}
+.poster[data-type="options"] .item{gap:24px}
 .poster .item:first-child{padding-top:12px}
 .poster .row{display:flex;align-items:flex-start;gap:24px}
 .poster .marker{flex:0 0 36px;font-size:24px;font-weight:800;color:var(--ink);line-height:1.4;margin-top:2px}

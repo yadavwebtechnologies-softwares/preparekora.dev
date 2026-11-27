@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,9 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#ffffff">
 <title>PrepareKora Workspace</title>
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -19,33 +20,43 @@
     <header class="intro-header">
       <div class="intro-brand">PrepareKora <span>Workspace</span></div>
     </header>
+
     <main class="intro-main">
       <h1>Create clean, professional question images for exams and study material.</h1>
+
       <p class="intro-lead">
         PrepareKora Workspace is an offline-first authoring tool for preparing bilingual
         examination visuals. Compose direct-answer and four-option questions with clear
         explanations, live-preview each layout, and export ready-to-publish images.
       </p>
+
       <div class="intro-features">
         <div class="feature-card">
           <div class="feature-title">Two question formats</div>
           <div class="feature-text">Direct answer or four-option multiple choice with explanation.</div>
         </div>
+
         <div class="feature-card">
           <div class="feature-title">Four image ratios</div>
           <div class="feature-text">1:1, 4:3, 3:4 and 16:9 — the content adapts fluidly to every frame.</div>
         </div>
+
         <div class="feature-card">
           <div class="feature-title">Automatic IDs</div>
           <div class="feature-text">Structured identifiers per subject, generated without any manual entry.</div>
         </div>
+
         <div class="feature-card">
           <div class="feature-title">Your workspace, your rules</div>
           <div class="feature-text">Subject list, prefixes, brand text, QR destination — all adjustable.</div>
         </div>
       </div>
-      <button id="goToWorkspace" class="btn-primary btn-large" type="button">Go to Workspace →</button>
+
+      <button id="goToWorkspace" class="btn-primary btn-large" type="button">
+        Go to Workspace →
+      </button>
     </main>
+
     <footer class="intro-footer">
       <div>PrepareKora Workspace</div>
       <div>preparekora.in · contact@preparekora.in</div>
@@ -57,6 +68,7 @@
 <section id="gateScreen" class="screen" hidden>
   <div class="gate-wrap">
     <button id="gateBack" class="gate-back" type="button">← Back</button>
+
     <div class="gate-card">
       <div class="gate-icon" aria-hidden="true">
         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -64,15 +76,14 @@
           <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
         </svg>
       </div>
+
       <h2 class="gate-title">Enter workspace password</h2>
       <p class="gate-sub">Use the keypad below. Your keyboard will not open.</p>
 
       <div class="pin-display" id="pinDisplay" aria-live="polite"></div>
-
       <div class="keypad" id="keypad"></div>
 
       <p class="gate-msg" id="gateMsg" aria-live="assertive"></p>
-
       <p class="gate-hint">Wrong password? Ask the administrator to reset it from Settings.</p>
     </div>
   </div>
@@ -80,12 +91,15 @@
 
 <!-- STAGE 3 — WORKSPACE -->
 <section id="workspaceScreen" class="screen" hidden>
+
   <header class="ws-header">
     <div class="ws-brand">PrepareKora <span>Workspace</span></div>
+
     <nav class="ws-nav" role="tablist">
       <button class="ws-tab active" data-tab="create" type="button">Create</button>
       <button class="ws-tab" data-tab="settings" type="button">Settings</button>
     </nav>
+
     <button id="lockBtn" class="ws-lock" type="button">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <rect x="3" y="11" width="18" height="11" rx="2"></rect>
@@ -96,216 +110,364 @@
   </header>
 
   <main class="ws-main">
+
+    <!-- CREATE TAB -->
     <div id="createTab" class="tab-panel active">
+
       <div class="create-layout">
+
         <aside class="create-form">
+
           <div class="form-header">
             <h2>New question</h2>
-            <p>Fields marked with * are required.</p>
+            <p>Enter questions using the fixed bilingual input format.</p>
           </div>
 
+          <!-- SUBJECT -->
           <div class="form-group">
             <label for="inpSubject">Subject *</label>
             <select id="inpSubject" class="input"></select>
           </div>
 
+          <!-- QUESTION TYPE -->
           <div class="form-group">
             <label>Question type *</label>
+
             <div class="segmented" role="group">
-              <button class="seg-btn active" data-type="direct" type="button">Direct Answer</button>
-              <button class="seg-btn" data-type="options" type="button">Four Options</button>
+              <button class="seg-btn active" data-type="direct" type="button">
+                Direct Answer
+              </button>
+
+              <button class="seg-btn" data-type="options" type="button">
+                Four Options
+              </button>
             </div>
           </div>
 
-          <div class="form-group">
-            <label for="inpQuestion">Question (English) *</label>
-            <textarea id="inpQuestion" class="input" rows="3" placeholder="Write the question exactly as it should appear."></textarea>
-          </div>
-          <div class="form-group">
-            <label for="inpQuestionAs">Question (Assamese) — optional</label>
-            <textarea id="inpQuestionAs" class="input" rows="2" placeholder="অসমীয়া প্ৰশ্ন (ঐচ্ছিক)"></textarea>
-          </div>
-
+          <!-- DIRECT ANSWER STRUCTURED INPUT -->
           <div id="directFields">
+
             <div class="form-group">
-              <label for="inpAnswer">Direct Answer (English) *</label>
-              <textarea id="inpAnswer" class="input" rows="2" placeholder="The correct answer."></textarea>
+              <label for="inpDirectBatch">Questions & Answers (English + Assamese) *</label>
+
+              <p class="field-help">
+                Enter up to 5 question-answer pairs in the specified format.
+                Every English question and answer must be followed by its Assamese
+                translation inside parentheses.
+              </p>
+
+              <textarea
+                id="inpDirectBatch"
+                class="input"
+                rows="16"
+                spellcheck="false"
+                placeholder="Q: English question (Assamese question)
+Ans: English answer (Assamese answer)
+
+Q: English question (Assamese question)
+Ans: English answer (Assamese answer)
+
+Q: English question (Assamese question)
+Ans: English answer (Assamese answer)
+
+Repeat the same Q and Ans structure for up to 5 questions."
+              ></textarea>
+
+              <small class="field-help">
+                Use Q: for each new question and Ans: for its answer.
+                Maximum 5 pairs per image.
+              </small>
             </div>
-            <div class="form-group">
-              <label for="inpAnswerAs">Direct Answer (Assamese) — optional</label>
-              <textarea id="inpAnswerAs" class="input" rows="2" placeholder="অসমীয়া উত্তৰ (ঐচ্ছিক)"></textarea>
-            </div>
+
           </div>
 
+          <!-- FOUR OPTIONS STRUCTURED INPUT -->
           <div id="optionsFields" hidden>
-            <div class="form-group grid-2">
-              <div><label for="inpOptA">Option A (EN) *</label><input id="inpOptA" class="input" type="text"></div>
-              <div><label for="inpOptAAs">Option A (AS)</label><input id="inpOptAAs" class="input" type="text"></div>
-              <div><label for="inpOptB">Option B (EN) *</label><input id="inpOptB" class="input" type="text"></div>
-              <div><label for="inpOptBAs">Option B (AS)</label><input id="inpOptBAs" class="input" type="text"></div>
-              <div><label for="inpOptC">Option C (EN) *</label><input id="inpOptC" class="input" type="text"></div>
-              <div><label for="inpOptCAs">Option C (AS)</label><input id="inpOptCAs" class="input" type="text"></div>
-              <div><label for="inpOptD">Option D (EN) *</label><input id="inpOptD" class="input" type="text"></div>
-              <div><label for="inpOptDAs">Option D (AS)</label><input id="inpOptDAs" class="input" type="text"></div>
-            </div>
+
             <div class="form-group">
-              <label for="inpCorrect">Correct Answer *</label>
-              <select id="inpCorrect" class="input">
-                <option value="A">A</option>
-                <option value="B">B</option>
-                <option value="C">C</option>
-                <option value="D">D</option>
-              </select>
+              <label for="inpMcqStructured">Question, Options & Explanation (English + Assamese) *</label>
+
+              <p class="field-help">
+                Enter one complete MCQ using the fixed structure below.
+                Assamese translation is mandatory for the question, all four options
+                and the explanation.
+              </p>
+
+              <textarea
+                id="inpMcqStructured"
+                class="input"
+                rows="20"
+                spellcheck="false"
+                placeholder="Q: English question (Assamese question)
+
+A: English option A (Assamese option A)
+B: English option B (Assamese option B)
+C: English option C (Assamese option C)
+D: English option D (Assamese option D)
+
+Correct: B
+
+Explanation: English explanation (Assamese explanation)"
+              ></textarea>
+
+              <small class="field-help">
+                Required labels: Q, A, B, C, D, Correct and Explanation.
+                Keep the correct answer as A, B, C or D.
+              </small>
             </div>
-            <div class="form-group">
-              <label for="inpExplanation">Explanation (English) *</label>
-              <textarea id="inpExplanation" class="input" rows="3" placeholder="A short, clear explanation of the correct answer."></textarea>
-            </div>
-            <div class="form-group">
-              <label for="inpExplanationAs">Explanation (Assamese) — optional</label>
-              <textarea id="inpExplanationAs" class="input" rows="3" placeholder="অসমীয়া ব্যাখ্যা (ঐচ্ছিক)"></textarea>
-            </div>
+
           </div>
 
+          <!-- ASPECT RATIO -->
           <div class="form-group">
             <label>Aspect ratio *</label>
+
             <div class="ratio-group" id="ratioGroup">
+
               <button class="ratio-btn" data-ratio="1:1" type="button">
-                <span class="ratio-label">1:1</span><span class="ratio-dim">1080 × 1080</span>
+                <span class="ratio-label">1:1</span>
+                <span class="ratio-dim">1080 × 1080</span>
               </button>
+
               <button class="ratio-btn active" data-ratio="4:3" type="button">
-                <span class="ratio-label">4:3</span><span class="ratio-dim">1440 × 1080</span>
+                <span class="ratio-label">4:3</span>
+                <span class="ratio-dim">1440 × 1080</span>
               </button>
+
               <button class="ratio-btn" data-ratio="3:4" type="button">
-                <span class="ratio-label">3:4</span><span class="ratio-dim">1080 × 1440</span>
+                <span class="ratio-label">3:4</span>
+                <span class="ratio-dim">1080 × 1440</span>
               </button>
+
               <button class="ratio-btn" data-ratio="16:9" type="button">
-                <span class="ratio-label">16:9</span><span class="ratio-dim">1920 × 1080</span>
+                <span class="ratio-label">16:9</span>
+                <span class="ratio-dim">1920 × 1080</span>
               </button>
+
             </div>
           </div>
 
+          <!-- STATUS -->
           <div class="form-status" id="formStatus"></div>
 
-          <button id="previewBtn" class="btn-primary btn-full" type="button">Preview image</button>
+          <button id="previewBtn" class="btn-primary btn-full" type="button">
+            Preview image
+          </button>
+
         </aside>
 
+        <!-- LIVE PREVIEW -->
         <section class="create-preview">
+
           <div class="preview-header">
             <div>
               <h2>Live preview</h2>
               <p id="previewMeta">Fills automatically as you type.</p>
             </div>
+
             <div class="preview-toolbar">
               <span class="preview-id" id="previewId">PK/.../--/--</span>
-              <button id="downloadBtn" class="btn-primary" type="button" disabled>Generate &amp; Download</button>
+
+              <button id="downloadBtn" class="btn-primary" type="button" disabled>
+                Generate &amp; Download
+              </button>
             </div>
           </div>
+
           <div class="preview-stage" id="previewStage">
             <div class="poster-viewport" id="posterViewport"></div>
           </div>
+
         </section>
+
       </div>
     </div>
 
+    <!-- SETTINGS TAB -->
     <div id="settingsTab" class="tab-panel" hidden>
+
       <div class="settings-wrap">
+
         <div class="form-header">
           <h2>Workspace settings</h2>
           <p>All changes save automatically to this browser.</p>
         </div>
 
+        <!-- PASSWORD -->
         <div class="settings-card">
           <h3>Access password</h3>
           <p class="settings-help">Used to unlock the workspace. Stored locally, not encrypted.</p>
+
           <div class="form-group">
             <label for="setPassword">New password (4–12 digits)</label>
             <input id="setPassword" class="input" type="text" inputmode="numeric" placeholder="Enter new password">
           </div>
-          <button id="savePassword" class="btn-secondary" type="button">Update password</button>
+
+          <button id="savePassword" class="btn-secondary" type="button">
+            Update password
+          </button>
+
           <p class="field-msg" id="pwMsg"></p>
         </div>
 
+        <!-- SUBJECTS -->
         <div class="settings-card">
           <h3>Subjects</h3>
-          <p class="settings-help">Each subject has a code used in generated IDs. Editing a name or code will not change previously generated IDs.</p>
+          <p class="settings-help">
+            Each subject has a code used in generated IDs.
+            Editing a name or code will not change previously generated IDs.
+          </p>
+
           <div class="subject-list" id="subjectList"></div>
+
           <div class="subject-add">
             <input id="newSubjectName" class="input" type="text" placeholder="Subject name" maxlength="40">
             <input id="newSubjectCode" class="input" type="text" placeholder="Code" maxlength="8" style="max-width:120px">
             <button id="addSubjectBtn" class="btn-secondary" type="button">Add subject</button>
           </div>
+
           <p class="field-msg" id="subjMsg"></p>
         </div>
 
+        <!-- ID CONFIGURATION -->
         <div class="settings-card">
           <h3>ID configuration</h3>
-          <p class="settings-help">Generated as <code>{PREFIX}/{SUBJECT}/{SET}/{Q}</code>. Set and question are zero-padded.</p>
+          <p class="settings-help">
+            Generated as <code>{PREFIX}/{SUBJECT}/{SET}/{Q}</code>.
+            Set and question are zero-padded.
+          </p>
+
           <div class="form-grid-2">
-            <div class="form-group"><label for="setIdPrefix">ID prefix</label><input id="setIdPrefix" class="input" type="text" maxlength="8"></div>
-            <div class="form-group"><label for="setPerSet">Questions per set</label><input id="setPerSet" class="input" type="number" min="1" max="999"></div>
-            <div class="form-group"><label for="setStartSet">Starting set number</label><input id="setStartSet" class="input" type="number" min="1" max="999"></div>
-            <div class="form-group"><label for="setStartQ">Starting question number</label><input id="setStartQ" class="input" type="number" min="1" max="999"></div>
+            <div class="form-group">
+              <label for="setIdPrefix">ID prefix</label>
+              <input id="setIdPrefix" class="input" type="text" maxlength="8">
+            </div>
+
+            <div class="form-group">
+              <label for="setPerSet">Questions per set</label>
+              <input id="setPerSet" class="input" type="number" min="1" max="999">
+            </div>
+
+            <div class="form-group">
+              <label for="setStartSet">Starting set number</label>
+              <input id="setStartSet" class="input" type="number" min="1" max="999">
+            </div>
+
+            <div class="form-group">
+              <label for="setStartQ">Starting question number</label>
+              <input id="setStartQ" class="input" type="number" min="1" max="999">
+            </div>
           </div>
+
           <div class="seq-box">
             <div class="seq-title">Current sequence per subject</div>
             <div id="seqList"></div>
-            <button id="resetAllSeq" class="btn-secondary" type="button" style="margin-top:12px">Reset all sequences to start</button>
+
+            <button id="resetAllSeq" class="btn-secondary" type="button" style="margin-top:12px">
+              Reset all sequences to start
+            </button>
           </div>
         </div>
 
+        <!-- GENERATED ID HISTORY -->
         <div class="settings-card">
           <h3>Generated IDs history</h3>
-          <p class="settings-help">Permanent record of every ID ever generated on this device.</p>
+          <p class="settings-help">
+            Permanent record of every ID ever generated on this device.
+          </p>
           <div id="historyList"></div>
         </div>
 
+        <!-- TYPOGRAPHY -->
         <div class="settings-card">
           <h3>Typography — default font sizes (px)</h3>
-          <p class="settings-help">Base sizes. Content shrinks further when it does not fit.</p>
+          <p class="settings-help">
+            Base sizes. Content shrinks further when it does not fit.
+          </p>
+
           <div class="form-grid-2">
-            <div class="form-group"><label for="fsQuestion">Question size</label><input id="fsQuestion" class="input" type="number" min="12" max="60"></div>
-            <div class="form-group"><label for="fsOption">Option size</label><input id="fsOption" class="input" type="number" min="10" max="40"></div>
-            <div class="form-group"><label for="fsAnswer">Answer size</label><input id="fsAnswer" class="input" type="number" min="12" max="48"></div>
-            <div class="form-group"><label for="fsExplanation">Explanation size</label><input id="fsExplanation" class="input" type="number" min="10" max="40"></div>
+            <div class="form-group">
+              <label for="fsQuestion">Question size</label>
+              <input id="fsQuestion" class="input" type="number" min="12" max="60">
+            </div>
+
+            <div class="form-group">
+              <label for="fsOption">Option size</label>
+              <input id="fsOption" class="input" type="number" min="10" max="40">
+            </div>
+
+            <div class="form-group">
+              <label for="fsAnswer">Answer size</label>
+              <input id="fsAnswer" class="input" type="number" min="12" max="48">
+            </div>
+
+            <div class="form-group">
+              <label for="fsExplanation">Explanation size</label>
+              <input id="fsExplanation" class="input" type="number" min="10" max="40">
+            </div>
           </div>
         </div>
 
-        <!-- ASSAMESE FONT SETTINGS -->
+        <!-- ASSAMESE FONT -->
         <div class="settings-card">
           <h3>Assamese Font</h3>
-          <p class="settings-help">Choose the Assamese Unicode font used in question images and previews.</p>
+          <p class="settings-help">
+            Choose the Assamese Unicode font used in question images and previews.
+          </p>
+
           <div class="form-group">
             <label for="setAssameseFont">Preferred Assamese font</label>
+
             <select id="setAssameseFont" class="input">
               <option value="Jyotirupa" selected>Jyotirupa (Default)</option>
               <option value="Rangmon">Rangmon</option>
             </select>
           </div>
-          <small class="field-help">Font files must be available locally in the project's fonts folder.</small>
+
+          <small class="field-help">
+            Font files must be available locally in the project's fonts folder.
+          </small>
         </div>
 
+        <!-- BRANDING AND QR -->
         <div class="settings-card">
           <h3>Branding and QR</h3>
-          <p class="settings-help">Shown inside the image header, footer and QR holder.</p>
-          <div class="form-group"><label for="setTopBrand">Top brand text</label><input id="setTopBrand" class="input" type="text" maxlength="40"></div>
-          <div class="form-group"><label for="setBottomBrand">Bottom brand text</label><input id="setBottomBrand" class="input" type="text" maxlength="40"></div>
+          <p class="settings-help">
+            Shown inside the image header, footer and QR holder.
+          </p>
+
+          <div class="form-group">
+            <label for="setTopBrand">Top brand text</label>
+            <input id="setTopBrand" class="input" type="text" maxlength="40">
+          </div>
+
+          <div class="form-group">
+            <label for="setBottomBrand">Bottom brand text</label>
+            <input id="setBottomBrand" class="input" type="text" maxlength="40">
+          </div>
+
           <div class="form-group">
             <label for="setQrUrl">QR code destination URL</label>
             <input id="setQrUrl" class="input" type="url" placeholder="https://…">
             <small class="field-help">Leave blank to hide the QR code.</small>
           </div>
         </div>
+
       </div>
     </div>
+
   </main>
 </section>
 
+<!-- LIBRARIES -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<!-- APPLICATION SCRIPTS -->
 <script src="js/store.js"></script>
 <script src="js/gate.js"></script>
 <script src="js/workspace.js"></script>
 <script src="js/app.js"></script>
+
 </body>
 </html>

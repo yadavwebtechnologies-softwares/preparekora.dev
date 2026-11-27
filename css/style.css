@@ -232,3 +232,9 @@ textarea.input{resize:vertical;min-height:64px;line-height:1.5;font-family:inher
   display: block;
   margin-top: 14px;
 }
+
+/* Slightly Darker Assamese Text */
+.poster .as-inline,
+.poster .exp-as {
+  color: #475569;
+}

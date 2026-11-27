@@ -1,8 +1,8 @@
 
 (function (global) {
   'use strict';
-  const $ = id => document.getElementById(id);
 
+  const $ = id => document.getElementById(id);
   const state = { questionType: 'direct', ratio: '4:3' };
 
   const RATIO_DIMS = {
@@ -12,51 +12,279 @@
     '16:9': { w: 1920, h: 1080 }
   };
 
-  function esc(s) {
-    return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-  }
-
-  // ===== ASSAMESE FONT MANAGEMENT =====
   const ASSAMESE_FONTS = ['Jyotirupa', 'Rangmon'];
   let previewRenderToken = 0;
 
+  function esc(s) {
+    return String(s ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  // ===== ASSAMESE FONT MANAGEMENT =====
+
   function getAssameseFont(cfg = PKStore.loadCfg()) {
-    const selected = cfg && cfg.typography ? cfg.typography.assameseFont : '';
+    const selected = cfg?.typography?.assameseFont;
     return ASSAMESE_FONTS.includes(selected) ? selected : 'Jyotirupa';
   }
 
   async function waitForAssameseFont(fontName) {
     if (!document.fonts || typeof document.fonts.load !== 'function') {
-      throw new Error('This browser does not support custom font loading.');
+      return false;
     }
 
-    const sample = 'অসমীয়া ৰ ৱ';
-    const loadedFaces = await document.fonts.load(`16px "${fontName}"`, sample);
-    await document.fonts.ready;
+    try {
+      const sample = 'অসমীয়া ৰ ৱ';
+      const faces = await document.fonts.load(`16px "${fontName}"`, sample);
+      await document.fonts.ready;
 
-    const faceLoaded = loadedFaces.some(face =>
-      String(face.family).replace(/["']/g, '') === fontName
-    );
-
-    if (!faceLoaded || !document.fonts.check(`16px "${fontName}"`, sample)) {
-      throw new Error(`${fontName} font could not be loaded. Check fonts/${fontName}.ttf.`);
+      return faces.length > 0 && document.fonts.check(`16px "${fontName}"`, sample);
+    } catch (error) {
+      console.warn('Assamese font loading:', error);
+      return false;
     }
   }
 
+  // ===== FIXED INPUT FORMAT PARSER =====
+
+  function splitBilingual(raw, label, errors) {
+    const value = String(raw || '').trim();
+    const splitAt = value.lastIndexOf(' (');
+
+    if (splitAt <= 0 || !value.endsWith(')')) {
+      errors.push(`${label}: Use English text (Assamese text).`);
+      return { english: value, assamese: '' };
+    }
+
+    const english = value.slice(0, splitAt).trim();
+    const assamese = value.slice(splitAt + 2, -1).trim();
+
+    if (!english || !assamese) {
+      errors.push(`${label}: Both English and Assamese text are required.`);
+    }
+
+    return { english, assamese };
+  }
+
+  function parseDirectBatch(raw) {
+    const errors = [];
+    const entries = [];
+
+    let current = null;
+    let activeField = '';
+
+    function flush() {
+      if (current) entries.push(current);
+      current = null;
+      activeField = '';
+    }
+
+    const lines = String(raw || '').split(/\r?\n/);
+
+    lines.forEach(line => {
+      const value = line.trim();
+      if (!value) return;
+
+      const match = value.match(/^([a-z]+)\s*:\s*(.*)$/i);
+
+      if (match) {
+        const label = match[1].toUpperCase();
+
+        if (label === 'Q') {
+          if (current) flush();
+
+          current = {};
+          current.question = match[2].trim();
+          activeField = 'question';
+          return;
+        }
+
+        if (label === 'ANS' || label === 'ANSWER') {
+          if (!current) current = {};
+
+          if (Object.prototype.hasOwnProperty.call(current, 'answer')) {
+            errors.push('Duplicate Ans field found.');
+            return;
+          }
+
+          current.answer = match[2].trim();
+          activeField = 'answer';
+          return;
+        }
+
+        errors.push(`Unexpected field "${match[1]}:" in Direct Answer module.`);
+        activeField = '';
+        return;
+      }
+
+      if (current && activeField) {
+        current[activeField] += (current[activeField] ? ' ' : '') + value;
+      } else {
+        errors.push(`Unrecognised input line: ${value}`);
+      }
+    });
+
+    flush();
+
+    if (!entries.length) {
+      errors.push('Enter at least one Question and Answer pair.');
+    }
+
+    if (entries.length > 5) {
+      errors.push('Maximum 5 Question and Answer pairs are allowed per image.');
+    }
+
+    const questions = entries.slice(0, 5).map((entry, index) => {
+      const q = splitBilingual(
+        entry.question,
+        `Question ${index + 1}`,
+        errors
+      );
+
+      const a = splitBilingual(
+        entry.answer,
+        `Answer ${index + 1}`,
+        errors
+      );
+
+      return {
+        question: q.english,
+        questionAs: q.assamese,
+        answer: a.english,
+        answerAs: a.assamese
+      };
+    });
+
+    return { questions, errors };
+  }
+
+  function parseMcqInput(raw) {
+    const errors = [];
+    const fields = {};
+    let activeField = '';
+
+    const labels = {
+      Q: 'question',
+      QUESTION: 'question',
+      A: 'optionA',
+      B: 'optionB',
+      C: 'optionC',
+      D: 'optionD',
+      CORRECT: 'correct',
+      'CORRECT ANSWER': 'correct',
+      EXPLANATION: 'explanation'
+    };
+
+    const lines = String(raw || '').split(/\r?\n/);
+
+    lines.forEach(line => {
+      const value = line.trim();
+      if (!value) return;
+
+      const match = value.match(/^([a-z]+(?:\s+[a-z]+)*)\s*:\s*(.*)$/i);
+
+      if (match) {
+        const label = match[1].trim().toUpperCase();
+        const field = labels[label];
+
+        if (!field) {
+          errors.push(`Unknown field "${match[1]}:".`);
+          activeField = '';
+          return;
+        }
+
+        if (Object.prototype.hasOwnProperty.call(fields, field)) {
+          errors.push(`Duplicate ${match[1]} field found.`);
+          activeField = '';
+          return;
+        }
+
+        fields[field] = match[2].trim();
+        activeField = field;
+        return;
+      }
+
+      if (activeField) {
+        fields[activeField] += (fields[activeField] ? ' ' : '') + value;
+      } else {
+        errors.push(`Unrecognised input line: ${value}`);
+      }
+    });
+
+    const question = splitBilingual(
+      fields.question,
+      'Question',
+      errors
+    );
+
+    const options = {};
+    const optionsAs = {};
+
+    ['A', 'B', 'C', 'D'].forEach(letter => {
+      const parsed = splitBilingual(
+        fields['option' + letter],
+        `Option ${letter}`,
+        errors
+      );
+
+      options[letter] = parsed.english;
+      optionsAs[letter] = parsed.assamese;
+    });
+
+    const correctMatch = String(fields.correct || '')
+      .trim()
+      .match(/^(?:OPTION\s*)?([A-D])$/i);
+
+    const correct = correctMatch ? correctMatch[1].toUpperCase() : '';
+
+    if (!correct) {
+      errors.push('Correct must be A, B, C or D.');
+    }
+
+    const explanation = splitBilingual(
+      fields.explanation,
+      'Explanation',
+      errors
+    );
+
+    return {
+      question: question.english,
+      questionAs: question.assamese,
+      options,
+      optionsAs,
+      correct,
+      explanation: explanation.english,
+      explanationAs: explanation.assamese,
+      errors
+    };
+  }
+
+  // ===== NAVIGATION =====
+
   function switchTab(name) {
-    document.querySelectorAll('.ws-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
+    document.querySelectorAll('.ws-tab').forEach(t =>
+      t.classList.toggle('active', t.dataset.tab === name)
+    );
+
     $('createTab').classList.toggle('active', name === 'create');
     $('createTab').hidden = name !== 'create';
     $('settingsTab').hidden = name !== 'settings';
     $('settingsTab').classList.toggle('active', name === 'settings');
+
     if (name === 'settings') renderSettings();
     if (name === 'create') renderPreview();
   }
+
+  // ===== SUBJECT MANAGEMENT =====
 
   function loadSubjectDropdown() {
     const cfg = PKStore.loadCfg();
     const sel = $('inpSubject');
     const prev = sel.value;
+
     sel.innerHTML = '';
 
     cfg.subjects.forEach(s => {
@@ -66,76 +294,156 @@
       sel.appendChild(o);
     });
 
-    if (prev && cfg.subjects.some(s => s.code === prev)) sel.value = prev;
+    if (prev && cfg.subjects.some(s => s.code === prev)) {
+      sel.value = prev;
+    }
   }
+
+  // ===== READ INPUT =====
 
   function readForm() {
     const cfg = PKStore.loadCfg();
     const code = $('inpSubject').value;
     const subj = cfg.subjects.find(s => s.code === code);
 
-    const d = {
+    const base = {
       type: state.questionType,
       subjectCode: code,
       subjectName: subj ? subj.name : '',
-      question: $('inpQuestion').value.trim(),
-      questionAs: $('inpQuestionAs').value.trim(),
       ratio: state.ratio
     };
 
-    if (state.questionType === 'direct') {
-      d.answer = $('inpAnswer').value.trim();
-      d.answerAs = $('inpAnswerAs').value.trim();
-    } else {
-      d.options = {
-        A: $('inpOptA').value.trim(), B: $('inpOptB').value.trim(),
-        C: $('inpOptC').value.trim(), D: $('inpOptD').value.trim()
-      };
+    // New structured Direct Answer input.
+    if (state.questionType === 'direct' && $('inpDirectBatch')) {
+      const parsed = parseDirectBatch($('inpDirectBatch').value);
 
-      d.optionsAs = {
-        A: $('inpOptAAs').value.trim(), B: $('inpOptBAs').value.trim(),
-        C: $('inpOptCAs').value.trim(), D: $('inpOptDAs').value.trim()
+      return {
+        ...base,
+        questions: parsed.questions,
+        parseErrors: parsed.errors
       };
-
-      d.correct = $('inpCorrect').value;
-      d.explanation = $('inpExplanation').value.trim();
-      d.explanationAs = $('inpExplanationAs').value.trim();
     }
 
-    return d;
+    // New structured MCQ input.
+    if (state.questionType === 'options' && $('inpMcqStructured')) {
+      const parsed = parseMcqInput($('inpMcqStructured').value);
+      const { errors, ...questionData } = parsed;
+
+      return {
+        ...base,
+        ...questionData,
+        parseErrors: errors
+      };
+    }
+
+    // Backward compatibility with the existing individual input fields.
+    if (state.questionType === 'direct') {
+      return {
+        ...base,
+        question: $('inpQuestion').value.trim(),
+        questionAs: $('inpQuestionAs').value.trim(),
+        answer: $('inpAnswer').value.trim(),
+        answerAs: $('inpAnswerAs').value.trim()
+      };
+    }
+
+    return {
+      ...base,
+      question: $('inpQuestion').value.trim(),
+      questionAs: $('inpQuestionAs').value.trim(),
+      options: {
+        A: $('inpOptA').value.trim(),
+        B: $('inpOptB').value.trim(),
+        C: $('inpOptC').value.trim(),
+        D: $('inpOptD').value.trim()
+      },
+      optionsAs: {
+        A: $('inpOptAAs').value.trim(),
+        B: $('inpOptBAs').value.trim(),
+        C: $('inpOptCAs').value.trim(),
+        D: $('inpOptDAs').value.trim()
+      },
+      correct: $('inpCorrect').value,
+      explanation: $('inpExplanation').value.trim(),
+      explanationAs: $('inpExplanationAs').value.trim()
+    };
   }
+
+  // ===== VALIDATION =====
 
   function validate(d) {
-    const e = [];
+    const errors = [];
 
-    if (!d.subjectCode) e.push('Select a subject.');
-    if (!d.question) e.push('Question is required.');
+    if (!d.subjectCode) errors.push('Select a subject.');
 
-    if (d.type === 'direct') {
-      if (!d.answer) e.push('Direct answer is required.');
-    } else {
-      ['A','B','C','D'].forEach(L => {
-        if (!d.options[L]) e.push(`Option ${L} is required.`);
-      });
-      if (!d.explanation) e.push('Explanation is required.');
+    if (d.parseErrors?.length) {
+      errors.push(...d.parseErrors);
     }
 
-    return e;
+    if (d.type === 'direct') {
+      if (Array.isArray(d.questions)) {
+        if (!d.questions.length) {
+          errors.push('Enter at least one Question and Answer pair.');
+        }
+
+        d.questions.forEach((q, index) => {
+          if (!q.question || !q.questionAs) {
+            errors.push(`Question ${index + 1}: English and Assamese are required.`);
+          }
+          if (!q.answer || !q.answerAs) {
+            errors.push(`Answer ${index + 1}: English and Assamese are required.`);
+          }
+        });
+      } else {
+        if (!d.question) errors.push('Question is required.');
+        if (!d.answer) errors.push('Direct answer is required.');
+      }
+    } else {
+      if (!d.question || !d.questionAs) {
+        errors.push('Question requires both English and Assamese.');
+      }
+
+      ['A', 'B', 'C', 'D'].forEach(letter => {
+        if (!d.options?.[letter] || !d.optionsAs?.[letter]) {
+          errors.push(`Option ${letter} requires English and Assamese.`);
+        }
+      });
+
+      if (!d.correct) errors.push('Select the correct answer.');
+      if (!d.explanation || !d.explanationAs) {
+        errors.push('Explanation requires both English and Assamese.');
+      }
+    }
+
+    return [...new Set(errors)];
   }
+
+  // ===== QUESTION TYPE AND RATIO =====
 
   function setType(t) {
     state.questionType = t;
-    document.querySelectorAll('.seg-btn').forEach(b => b.classList.toggle('active', b.dataset.type === t));
+
+    document.querySelectorAll('.seg-btn').forEach(b =>
+      b.classList.toggle('active', b.dataset.type === t)
+    );
+
     $('directFields').hidden = t !== 'direct';
     $('optionsFields').hidden = t !== 'options';
+
     renderPreview();
   }
 
   function setRatio(r) {
     state.ratio = r;
-    document.querySelectorAll('.ratio-btn').forEach(b => b.classList.toggle('active', b.dataset.ratio === r));
+
+    document.querySelectorAll('.ratio-btn').forEach(b =>
+      b.classList.toggle('active', b.dataset.ratio === r)
+    );
+
     renderPreview();
   }
+
+  // ===== BUILD IMAGE =====
 
   function buildPosterHTML(d, id) {
     const cfg = PKStore.loadCfg();
@@ -158,35 +466,86 @@
     let body;
 
     if (d.type === 'direct') {
-      const qAs = d.questionAs ? ` <span class="as-inline">(${esc(d.questionAs)})</span>` : '';
-      const aAs = d.answerAs ? ` <span class="as-inline">(${esc(d.answerAs)})</span>` : '';
+      const questions = Array.isArray(d.questions)
+        ? d.questions
+        : [{
+            question: d.question,
+            questionAs: d.questionAs,
+            answer: d.answer,
+            answerAs: d.answerAs
+          }];
 
-      body = `<div class="list"><div class="item">
-        <div class="row"><div class="marker">Q</div><div class="text">${esc(d.question)}${qAs}</div></div>
-        <div class="row"><div class="marker">Ans</div><div class="ans-text">${esc(d.answer)}${aAs}</div></div>
-      </div></div>`;
+      const items = questions.map((q, index) => {
+        const qAs = q.questionAs
+          ? ` <span class="as-inline">(${esc(q.questionAs)})</span>`
+          : '';
+
+        const aAs = q.answerAs
+          ? ` <span class="as-inline">(${esc(q.answerAs)})</span>`
+          : '';
+
+        const separator = index
+          ? 'style="border-top:1px solid var(--line);"'
+          : '';
+
+        return `<div class="item" ${separator}>
+          <div class="row">
+            <div class="marker">Q</div>
+            <div class="text">${esc(q.question)}${qAs}</div>
+          </div>
+          <div class="row">
+            <div class="marker">Ans</div>
+            <div class="ans-text">${esc(q.answer)}${aAs}</div>
+          </div>
+        </div>`;
+      }).join('');
+
+      body = `<div class="list">${items}</div>`;
+
     } else {
       const opt = L => {
-        const as = d.optionsAs[L] ? ` <span class="as-inline">(${esc(d.optionsAs[L])})</span>` : '';
-        return `<div class="opt${d.correct === L ? ' correct' : ''}"><div class="key">${L}</div><div>${esc(d.options[L])}${as}</div></div>`;
+        const as = d.optionsAs[L]
+          ? ` <span class="as-inline">(${esc(d.optionsAs[L])})</span>`
+          : '';
+
+        return `<div class="opt${d.correct === L ? ' correct' : ''}">
+          <div class="key">${L}</div>
+          <div>${esc(d.options[L])}${as}</div>
+        </div>`;
       };
 
-      const qAs = d.questionAs ? ` <span class="as-inline">(${esc(d.questionAs)})</span>` : '';
-      const expAs = d.explanationAs ? `<div class="divider"></div><div class="exp-as">${esc(d.explanationAs)}</div>` : '';
+      const qAs = d.questionAs
+        ? ` <span class="as-inline">(${esc(d.questionAs)})</span>`
+        : '';
 
-      body = `<div class="list"><div class="item">
-        <div class="q-row"><div class="marker">Q</div><div class="q-text">${esc(d.question)}${qAs}</div></div>
-        <div class="options-grid">${opt('A')}${opt('B')}${opt('C')}${opt('D')}</div>
-        <div class="explanation">
-          <div class="exp-label">Explanation</div>
-          <div class="exp-text">${esc(d.explanation)}</div>
-          ${expAs}
+      const expAs = d.explanationAs
+        ? `<div class="divider"></div><div class="exp-as">${esc(d.explanationAs)}</div>`
+        : '';
+
+      body = `<div class="list">
+        <div class="item">
+          <div class="q-row">
+            <div class="marker">Q</div>
+            <div class="q-text">${esc(d.question)}${qAs}</div>
+          </div>
+          <div class="options-grid">
+            ${opt('A')}${opt('B')}${opt('C')}${opt('D')}
+          </div>
+          <div class="explanation">
+            <div class="exp-label">Explanation</div>
+            <div class="exp-text">${esc(d.explanation)}</div>
+            ${expAs}
+          </div>
         </div>
-      </div></div>`;
+      </div>`;
     }
 
-    return `<div class="poster" data-type="${d.type}" data-ratio="${d.ratio}">${header}${body}${footer}</div>`;
+    return `<div class="poster" data-type="${d.type}" data-ratio="${d.ratio}">
+      ${header}${body}${footer}
+    </div>`;
   }
+
+  // ===== IMAGE DIMENSIONS AND TYPOGRAPHY =====
 
   function applyDimsAndTypo(p) {
     const c = PKStore.loadCfg();
@@ -202,15 +561,20 @@
     p.style.setProperty('--fs-h', c.typography.brandSize + 'px');
     p.style.setProperty('--fs-b', c.typography.subjectSize + 'px');
 
-    // Apply selected local Assamese font.
-    p.style.setProperty('--font-as', `"${getAssameseFont(c)}", sans-serif`);
+    p.style.setProperty(
+      '--font-as',
+      `"${getAssameseFont(c)}", sans-serif`
+    );
   }
+
+  // ===== DYNAMIC CONTENT FITTING =====
 
   function fitPoster(p) {
     const body = p.querySelector('.list');
-    if (!body) return;
+    if (!body) return true;
 
     const c = PKStore.loadCfg();
+
     const base = {
       q: c.typography.questionSize,
       a: c.typography.answerSize,
@@ -218,29 +582,48 @@
       e: c.typography.explanationSize
     };
 
+    const items = [...body.querySelectorAll('.item')];
+    const isDirectBatch = p.dataset.type === 'direct' && items.length > 1;
+
     let scale = 1;
 
-    const set = s => {
-      p.style.setProperty('--fs-q', (base.q * s) + 'px');
-      p.style.setProperty('--fs-a', (base.a * s) + 'px');
-      p.style.setProperty('--fs-o', (base.o * s) + 'px');
-      p.style.setProperty('--fs-e', (base.e * s) + 'px');
-    };
+    function applyScale() {
+      p.style.setProperty('--fs-q', (base.q * scale) + 'px');
+      p.style.setProperty('--fs-a', (base.a * scale) + 'px');
+      p.style.setProperty('--fs-o', (base.o * scale) + 'px');
+      p.style.setProperty('--fs-e', (base.e * scale) + 'px');
 
-    set(1);
+      // Compact vertical spacing only for multiple Direct Answer items.
+      if (isDirectBatch) {
+        const itemGap = Math.max(7, 16 * scale);
+        const listMargin = Math.max(10, 28 * scale);
 
-    for (let i = 0; i < 40; i++) {
-      if (body.scrollHeight <= body.clientHeight + 1) break;
+        body.style.marginTop = listMargin + 'px';
+        body.style.marginBottom = listMargin + 'px';
 
-      scale -= 0.03;
+        items.forEach((item, index) => {
+          item.style.gap = itemGap + 'px';
+          item.style.paddingTop = Math.max(
+            6,
+            (index === 0 ? 12 : 26) * scale
+          ) + 'px';
+          item.style.paddingBottom = Math.max(6, 26 * scale) + 'px';
+        });
+      }
+    }
 
-      if (scale < 0.45) {
-        set(0.45);
-        break;
+    for (let i = 0; i <= 30; i++) {
+      applyScale();
+
+      if (body.scrollHeight <= body.clientHeight + 1) {
+        return true;
       }
 
-      set(scale);
+      scale = Math.max(0.40, scale - 0.02);
     }
+
+    applyScale();
+    return body.scrollHeight <= body.clientHeight + 1;
   }
 
   function scaleViewport(poster, vp) {
@@ -258,10 +641,13 @@
     vp.style.aspectRatio = `${dims.w} / ${dims.h}`;
   }
 
+  // ===== QR CODE =====
+
   function renderQR(container, url) {
     if (!container) return;
 
     container.innerHTML = '';
+
     if (!url || !global.QRCode) return;
 
     try {
@@ -271,11 +657,24 @@
         height: 200,
         correctLevel: QRCode.CorrectLevel.M
       });
-    } catch {}
+    } catch (error) {
+      console.error('QR generation failed:', error);
+    }
   }
 
+  // ===== STATUS =====
+
+  function setStatus(text, type) {
+    const status = $('formStatus');
+    status.textContent = text;
+    status.className = 'form-status' + (type ? ' ' + type : '');
+  }
+
+  // ===== LIVE PREVIEW =====
+
   function renderPreview() {
-    const renderToken = ++previewRenderToken;
+    const token = ++previewRenderToken;
+
     const d = readForm();
     const cfg = PKStore.loadCfg();
     const seq = PKStore.loadSeq();
@@ -292,42 +691,49 @@
     applyDimsAndTypo(poster);
     renderQR(poster.querySelector('.f-qr'), cfg.branding.qrUrl);
 
-    // Wait for the selected Assamese font before measuring preview content.
-    waitForAssameseFont(getAssameseFont(cfg)).then(() => {
-      if (renderToken !== previewRenderToken || !poster.isConnected) return;
-
-      requestAnimationFrame(() => {
-        if (renderToken !== previewRenderToken || !poster.isConnected) return;
-        fitPoster(poster);
-        scaleViewport(poster, vp);
-      });
-    }).catch(error => {
-      console.error('Assamese preview font loading failed:', error);
-
-      if (renderToken !== previewRenderToken || !poster.isConnected) return;
-
-      requestAnimationFrame(() => {
-        if (renderToken !== previewRenderToken || !poster.isConnected) return;
-        fitPoster(poster);
-        scaleViewport(poster, vp);
-      });
-    });
-
     $('previewId').textContent = nextId;
 
-    const errs = validate(d);
-    const status = $('formStatus');
+    const errors = validate(d);
+    const downloadBtn = $('downloadBtn');
 
-    if (errs.length) {
-      status.textContent = errs[0];
-      status.className = 'form-status error';
+    downloadBtn.disabled = errors.length > 0;
+
+    if (errors.length) {
+      setStatus(errors[0], 'error');
     } else {
-      status.textContent = 'Ready to generate.';
-      status.className = 'form-status success';
+      setStatus('Preparing preview...', '');
     }
 
-    $('downloadBtn').disabled = errs.length > 0;
+    waitForAssameseFont(getAssameseFont(cfg)).then(fontLoaded => {
+      if (token !== previewRenderToken || !poster.isConnected) return;
+
+      if (!fontLoaded) {
+        console.warn('Selected Assamese font is not registered. Check the local font files and CSS.');
+      }
+
+      requestAnimationFrame(() => {
+        if (token !== previewRenderToken || !poster.isConnected) return;
+
+        const fits = fitPoster(poster);
+        scaleViewport(poster, vp);
+
+        if (errors.length) return;
+
+        if (!fits) {
+          setStatus(
+            'Content is too long for this image. Shorten the text or select another aspect ratio.',
+            'error'
+          );
+          downloadBtn.disabled = true;
+        } else {
+          setStatus('Ready to generate.', 'success');
+          downloadBtn.disabled = false;
+        }
+      });
+    });
   }
+
+  // ===== IMAGE DOWNLOAD =====
 
   async function handleDownload() {
     if (!global.html2canvas) {
@@ -336,43 +742,58 @@
     }
 
     const d = readForm();
-    const errs = validate(d);
+    const errors = validate(d);
 
-    if (errs.length) {
-      alert(errs[0]);
+    if (errors.length) {
+      alert(errors[0]);
       return;
     }
 
     const cfg = PKStore.loadCfg();
     const fontName = getAssameseFont(cfg);
 
-    // Load font before reserving an ID.
-    try {
-      await waitForAssameseFont(fontName);
-    } catch (e) {
-      alert('Assamese font could not be loaded: ' + (e.message || e));
-      return;
-    }
-
-    const seq = PKStore.loadSeq();
-    const entry = PKStore.reserveId(cfg, seq, d.subjectCode, d.subjectName);
-
-    const off = document.createElement('div');
-    off.style.cssText = 'position:fixed;left:-99999px;top:0;pointer-events:none';
-    off.innerHTML = buildPosterHTML(d, entry.id);
-
-    const poster = off.querySelector('.poster');
-
-    applyDimsAndTypo(poster);
-    renderQR(poster.querySelector('.f-qr'), cfg.branding.qrUrl);
-
-    document.body.appendChild(off);
+    let off = null;
 
     try {
-      await waitForAssameseFont(fontName);
-      await new Promise(r => setTimeout(r, 300));
+      const fontLoaded = await waitForAssameseFont(fontName);
 
-      fitPoster(poster);
+      if (!fontLoaded) {
+        console.warn(`Custom font ${fontName} was not detected. Check fonts/${fontName}.ttf.`);
+      }
+
+      const seq = PKStore.loadSeq();
+      const provisionalId = PKStore.peekNextId(cfg, seq, d.subjectCode);
+
+      off = document.createElement('div');
+      off.style.cssText = 'position:fixed;left:-99999px;top:0;pointer-events:none';
+      off.innerHTML = buildPosterHTML(d, provisionalId);
+
+      const poster = off.querySelector('.poster');
+
+      applyDimsAndTypo(poster);
+      renderQR(poster.querySelector('.f-qr'), cfg.branding.qrUrl);
+
+      document.body.appendChild(off);
+
+      await document.fonts.ready;
+      await new Promise(resolve => setTimeout(resolve, 250));
+
+      const fits = fitPoster(poster);
+
+      if (!fits) {
+        alert('The content does not fit safely. Shorten the text or select another aspect ratio. No ID has been reserved.');
+        return;
+      }
+
+      // Reserve the ID only after validation and fitting succeed.
+      const entry = PKStore.reserveId(
+        cfg,
+        seq,
+        d.subjectCode,
+        d.subjectName
+      );
+
+      poster.querySelector('.h-badge').textContent = entry.id;
 
       const canvas = await global.html2canvas(poster, {
         scale: 2,
@@ -391,16 +812,19 @@
       a.click();
       a.remove();
 
-      setTimeout(() => renderPreview(), 250);
+      setTimeout(() => {
+        renderPreview();
+      }, 250);
 
-    } catch (e) {
-      alert('Download failed: ' + (e.message || e));
+    } catch (error) {
+      alert('Download failed: ' + (error.message || error));
     } finally {
-      off.remove();
+      if (off) off.remove();
     }
   }
 
   // ===== SETTINGS =====
+
   function renderSettings() {
     const cfg = PKStore.loadCfg();
 
@@ -422,8 +846,13 @@
       list.appendChild(row);
     });
 
-    list.querySelectorAll('.subj-save').forEach(b => b.addEventListener('click', () => saveSubjectEdit(b.dataset.code)));
-    list.querySelectorAll('.subj-remove').forEach(b => b.addEventListener('click', () => removeSubject(b.dataset.code)));
+    list.querySelectorAll('.subj-save').forEach(b =>
+      b.addEventListener('click', () => saveSubjectEdit(b.dataset.code))
+    );
+
+    list.querySelectorAll('.subj-remove').forEach(b =>
+      b.addEventListener('click', () => removeSubject(b.dataset.code))
+    );
 
     $('setIdPrefix').value = cfg.idSettings.prefix;
     $('setPerSet').value = cfg.idSettings.perSet;
@@ -435,7 +864,6 @@
     $('fsAnswer').value = cfg.typography.answerSize;
     $('fsExplanation').value = cfg.typography.explanationSize;
 
-    // Restore saved Assamese font choice.
     if ($('setAssameseFont')) {
       $('setAssameseFont').value = getAssameseFont(cfg);
     }
@@ -501,11 +929,19 @@
 
   function saveSubjectEdit(oldCode) {
     const row = document.querySelector(`.subj-name-edit[data-code="${oldCode}"]`).closest('.subject-row');
+
     const newName = row.querySelector('.subj-name-edit').value.trim();
     const newCode = row.querySelector('.subj-code-edit').value.trim().toUpperCase();
 
-    if (!newName) { alert('Subject name required.'); return; }
-    if (!/^[A-Z0-9]{1,8}$/.test(newCode)) { alert('Code must be 1–8 letters/numbers.'); return; }
+    if (!newName) {
+      alert('Subject name required.');
+      return;
+    }
+
+    if (!/^[A-Z0-9]{1,8}$/.test(newCode)) {
+      alert('Code must be 1–8 letters/numbers.');
+      return;
+    }
 
     const cfg = PKStore.loadCfg();
 
@@ -519,6 +955,7 @@
 
     subj.name = newName;
     subj.code = newCode;
+
     PKStore.saveCfg(cfg);
 
     if (newCode !== oldCode) {
@@ -560,8 +997,15 @@
     const name = $('newSubjectName').value.trim();
     const code = $('newSubjectCode').value.trim().toUpperCase();
 
-    if (!name) { msg('subjMsg', 'Enter a subject name.', false); return; }
-    if (!/^[A-Z0-9]{1,8}$/.test(code)) { msg('subjMsg', 'Code must be 1–8 letters/numbers.', false); return; }
+    if (!name) {
+      msg('subjMsg', 'Enter a subject name.', false);
+      return;
+    }
+
+    if (!/^[A-Z0-9]{1,8}$/.test(code)) {
+      msg('subjMsg', 'Code must be 1–8 letters/numbers.', false);
+      return;
+    }
 
     const cfg = PKStore.loadCfg();
 
@@ -613,15 +1057,14 @@
     $('savePassword').addEventListener('click', savePassword);
     $('addSubjectBtn').addEventListener('click', addSubject);
 
-    // Save font choice to localStorage.
-    const assameseFontSelect = $('setAssameseFont');
+    const fontSelect = $('setAssameseFont');
 
-    if (assameseFontSelect) {
-      assameseFontSelect.addEventListener('change', () => {
+    if (fontSelect) {
+      fontSelect.addEventListener('change', () => {
         const c = PKStore.loadCfg();
 
-        c.typography.assameseFont = ASSAMESE_FONTS.includes(assameseFontSelect.value)
-          ? assameseFontSelect.value
+        c.typography.assameseFont = ASSAMESE_FONTS.includes(fontSelect.value)
+          ? fontSelect.value
           : 'Jyotirupa';
 
         PKStore.saveCfg(c);
@@ -687,17 +1130,46 @@
     });
   }
 
-  function wireCreate() {
-    document.querySelectorAll('.ws-tab').forEach(t => t.addEventListener('click', () => switchTab(t.dataset.tab)));
-    document.querySelectorAll('.seg-btn').forEach(b => b.addEventListener('click', () => setType(b.dataset.type)));
-    document.querySelectorAll('.ratio-btn').forEach(b => b.addEventListener('click', () => setRatio(b.dataset.ratio)));
+  // ===== CREATE FORM EVENTS =====
 
-    [
-      'inpSubject', 'inpQuestion', 'inpQuestionAs', 'inpAnswer', 'inpAnswerAs',
-      'inpOptA', 'inpOptAAs', 'inpOptB', 'inpOptBAs',
-      'inpOptC', 'inpOptCAs', 'inpOptD', 'inpOptDAs',
-      'inpCorrect', 'inpExplanation', 'inpExplanationAs'
-    ].forEach(id => {
+  function wireCreate() {
+    document.querySelectorAll('.ws-tab').forEach(t =>
+      t.addEventListener('click', () => switchTab(t.dataset.tab))
+    );
+
+    document.querySelectorAll('.seg-btn').forEach(b =>
+      b.addEventListener('click', () => setType(b.dataset.type))
+    );
+
+    document.querySelectorAll('.ratio-btn').forEach(b =>
+      b.addEventListener('click', () => setRatio(b.dataset.ratio))
+    );
+
+    const inputIds = [
+      // New structured input fields.
+      'inpDirectBatch',
+      'inpMcqStructured',
+
+      // Legacy fields remain supported until index.html is updated.
+      'inpSubject',
+      'inpQuestion',
+      'inpQuestionAs',
+      'inpAnswer',
+      'inpAnswerAs',
+      'inpOptA',
+      'inpOptAAs',
+      'inpOptB',
+      'inpOptBAs',
+      'inpOptC',
+      'inpOptCAs',
+      'inpOptD',
+      'inpOptDAs',
+      'inpCorrect',
+      'inpExplanation',
+      'inpExplanationAs'
+    ];
+
+    inputIds.forEach(id => {
       const el = $(id);
       if (!el) return;
 
@@ -711,6 +1183,7 @@
     window.addEventListener('resize', () => {
       const vp = $('posterViewport');
       const poster = vp && vp.querySelector('.poster');
+
       if (poster) scaleViewport(poster, vp);
     });
 
@@ -721,6 +1194,8 @@
       PKApp.showIntro();
     });
   }
+
+  // ===== INITIALIZE =====
 
   function init() {
     const cfg = PKStore.loadCfg();

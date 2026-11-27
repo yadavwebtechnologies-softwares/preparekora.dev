@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,7 +8,7 @@
 <title>PrepareKora Workspace</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Assamese:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -268,6 +269,20 @@
             <div class="form-group"><label for="fsAnswer">Answer size</label><input id="fsAnswer" class="input" type="number" min="12" max="48"></div>
             <div class="form-group"><label for="fsExplanation">Explanation size</label><input id="fsExplanation" class="input" type="number" min="10" max="40"></div>
           </div>
+        </div>
+
+        <!-- ASSAMESE FONT SETTINGS -->
+        <div class="settings-card">
+          <h3>Assamese Font</h3>
+          <p class="settings-help">Choose the Assamese Unicode font used in question images and previews.</p>
+          <div class="form-group">
+            <label for="setAssameseFont">Preferred Assamese font</label>
+            <select id="setAssameseFont" class="input">
+              <option value="Jyotirupa" selected>Jyotirupa (Default)</option>
+              <option value="Rangmon">Rangmon</option>
+            </select>
+          </div>
+          <small class="field-help">Font files must be available locally in the project's fonts folder.</small>
         </div>
 
         <div class="settings-card">

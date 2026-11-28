@@ -233,8 +233,10 @@ textarea.input{resize:vertical;min-height:64px;line-height:1.5;font-family:inher
   margin-top: 14px;
 }
 
-/* Slightly Darker Assamese Text */
+/* Clear and High-Contrast Assamese Text */
 .poster .as-inline,
 .poster .exp-as {
-  color: #475569;
+  color: #0f172a;
+  opacity: 1;
+  font-weight: 600;
 }
